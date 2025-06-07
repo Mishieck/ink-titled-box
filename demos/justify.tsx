@@ -17,11 +17,11 @@ export const Justify: React.FC = () => (
       titleJustifyValues.map(name => (
         <TitledBox
           key={name}
-          titles={[capitalize(name)]}
+          titles={['Left', 'Center', 'Right']}
           titleJustify={name}
           borderStyle='single'
         >
-          <Text>{capitalize(name)} Border</Text>
+          <Text>{name}</Text>
         </TitledBox>
       ))
     }
