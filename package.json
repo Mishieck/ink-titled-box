@@ -1,0 +1,20 @@
+{
+  "name": "ink-titled-box",
+  "module": "main.tsx",
+  "type": "module",
+  "scripts": {
+    "demo": "bun run demos.tsx"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/react": "^19.1.6"
+  },
+  "peerDependencies": {
+    "ink": "^6.0.0",
+    "react": "^19.1.0",
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@mishieck/observable": "npm:@jsr/mishieck__observable"
+  }
+}
