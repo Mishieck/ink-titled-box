@@ -27,5 +27,3 @@ export const Justify: React.FC = () => (
     }
   </Box>
 );
-
-const capitalize = (str: string) => `${str[0]?.toUpperCase()}${str.slice(1)}`;
