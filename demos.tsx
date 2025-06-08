@@ -9,14 +9,20 @@ const demos = {
 
 const demo = process.argv[2];
 
+const possibleArguments = Object
+  .keys(demos)
+  .map(name => `'${name}'`).join(', ');
+
 const MissingArg: React.FC = () => (
-  <Text color='red'>Demo argument not specified.</Text>
+  <Text color='red'>
+    Demo argument not specified. Possible arguments are: {possibleArguments}
+  </Text>
 );
 
 const InvalidArg: React.FC = () => (
   <Text color='red'>
     Argument '{demo}' is not valid! Correct argument should have one of the
-    following values: {Object.keys(demos).map(name => `'${name}'`).join(', ')}.
+    following values: {possibleArguments}.
   </Text>
 );
 
