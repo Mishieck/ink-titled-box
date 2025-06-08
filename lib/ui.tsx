@@ -1,33 +1,47 @@
-import { Box, type DOMElement, measureElement, Text, type BoxProps } from "ink";
+import { Box, type DOMElement, measureElement, type BoxProps } from "ink";
 import type React from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { type BorderStyle, type Size, type TitledBoxData, type TitleJustify } from "./data";
+import type { Size, TitledBoxData } from "./data";
 import { TitledBoxApi } from "./object";
-
-export type TitledBoxProps = Omit<BoxProps, 'borderStyle' | 'children'> & {
-  titles: Array<string>;
-  titleJustify?: TitleJustify,
-  borderStyle: BorderStyle;
-  children: React.ReactElement;
-};
+import { Border } from "./border";
+import {
+  getOuterBoxProps,
+  getInnerBoxProps,
+  type TitledBoxProps
+} from "./utils";
 
 export const TitledBox: React.FC<TitledBoxProps> = props => {
+  const boxRef = useRef<DOMElement>(null);
+  const innerBoxProps = getInnerBoxProps(props);
+
   const {
     titles,
     borderStyle,
-    children,
-    padding,
-    width,
-    height,
     titleJustify,
-    ...boxProps
-  } = props;
 
-  const boxRef = useRef<DOMElement>(null);
+    borderTop,
+    borderLeft,
+    borderColor,
+    borderRight,
+    borderBottom,
+    borderDimColor,
+    borderTopColor,
+    borderLeftColor,
+    borderRightColor,
+    borderBottomColor,
+    borderTopDimColor,
+    borderLeftDimColor,
+    borderRightDimColor,
+    borderBottomDimColor,
+
+    ...outerBoxProps
+  } = getOuterBoxProps(props);
+
+  const { height, width } = outerBoxProps;
 
   const size: Size = {
-    height: typeof height === 'number' ? height : 0,
-    width: typeof width === 'number' ? width : 0
+    height: typeof height === "number" ? height : 0,
+    width: typeof width === "number" ? width : 0
   };
 
   const box = useMemo(
@@ -49,17 +63,34 @@ export const TitledBox: React.FC<TitledBoxProps> = props => {
   );
 
   return (
-    <Box ref={boxRef} flexDirection="column" {...boxProps}>
-      <Text>{top}</Text>
+    <Box ref={boxRef} flexDirection="column" {...outerBoxProps}>
+      <Border
+        content={top}
+        color={borderTopColor ?? borderColor}
+        dimColor={borderTopDimColor}
+        show={borderTop}
+      />
       <Box>
-        <Box>
-          <Text>{left}</Text>
-        </Box>
-        <Box flexGrow={1} padding={padding}>{children}</Box>
-        <Text>{right}</Text>
+        <Border
+          content={left}
+          color={borderLeftColor ?? borderColor}
+          dimColor={borderLeftDimColor}
+          show={borderLeft}
+        />
+        <Box flexGrow={1} {...innerBoxProps}></Box>
+        <Border
+          content={right}
+          color={borderRightColor ?? borderColor}
+          dimColor={borderRightDimColor}
+          show={borderRight}
+        />
       </Box>
-      <Text>{bottom}</Text>
+      <Border
+        content={bottom}
+        color={borderBottomColor ?? borderColor}
+        dimColor={borderBottomDimColor}
+        show={borderBottom}
+      />
     </Box>
   );
 };
-
