@@ -4,15 +4,15 @@ import { Box, Text } from "ink";
 
 const titleJustifyValues: Array<TitleJustify> = [
   "flex-start",
+  "center",
   "flex-end",
   "space-between",
   "space-around",
   "space-evenly",
-  "center"
 ];
 
 export const Justify: React.FC = () => (
-  <Box flexDirection="column" gap={0}>
+  <Box width={81} padding={2} flexDirection="column" gap={1}>
     {
       titleJustifyValues.map(name => (
         <TitledBox
