@@ -16,6 +16,39 @@ export class TitledBoxApi implements TitledBoxData {
   static TOP_CORNER_LENGTH = 2; // Top-left and Top-right characters
   static TITLE_GAP = 1;
 
+  static shiftPositions(positions: Array<number>, shiftCount: number): Array<number> {
+    const shiftPosition = Math.ceil(
+      (positions.length - shiftCount) / 2
+    );
+
+    let remainingSpaces = shiftCount;
+
+    while (remainingSpaces) {
+      for (let i = shiftPosition; i < positions.length; i++) positions[i]!++;
+      remainingSpaces--;
+    }
+
+    return positions;
+  }
+
+  static getPositions(titles: Array<string>, startPosition: number, spaceLength: number, shiftCount: number): Array<number> {
+    let positions: Array<number> = [];
+    let position = startPosition;
+
+    for (const title of titles) {
+      positions.push(position);
+      position += title.length + TitledBoxApi.TITLE_PADDING + spaceLength;
+    }
+
+    /* If there are spaces that have not been inserted, shift middle titles to
+     * the right by the number of spaces remaining. This ensures that the 
+     * title distribution is symmetrical at both ends.
+     */
+    if (shiftCount)
+      positions = this.shiftPositions(positions, shiftCount);
+
+    return positions;
+  }
   style: BorderStyle;
   size: Size;
   titles: Array<string>;
@@ -139,59 +172,91 @@ export class TitledBoxApi implements TitledBoxData {
     const startPositions = this.startTitlePositions;
     if (!startPositions.length) return startPositions;
     const gapLength = startPositions.length - 1;
-    const padding = this.size.width - this.totalTitleLength - gapLength - TitledBoxApi.TOP_CORNER_LENGTH;
+
+    const padding = this.size.width - this.totalTitleLength - gapLength -
+      TitledBoxApi.TOP_CORNER_LENGTH;
+
     return startPositions.map(position => position + padding);
   }
 
   get spaceBetweenTitlePositions(): Array<number> {
-    const visibleTitles = this.visibleTitles;
-    const spaceCount = visibleTitles.length - 1;
-    const totalSpaceLength = this.size.width - this.totalTitleLength - 2;
-    const spaceLength = Math.floor(totalSpaceLength / spaceCount);
-    const remainderSpace = totalSpaceLength % spaceLength;
-    let positions: Array<number> = [];
-    let position = 0;
-
-    visibleTitles.forEach((title, i) => {
-      positions.push(position);
-      position += title.length + TitledBoxApi.TITLE_PADDING + spaceLength;
-    });
-
-    /* If there are spaces that have not been inserted, shift certain titles to
-     * the right by the number of spaces remaining. This ensures that the last
-     * title is always at the very end of the top border.
-     */
-    if (remainderSpace) {
-      const shiftPosition = Math.ceil(
-        (visibleTitles.length - remainderSpace) / 2
-      );
-
-      let remainingSpaces = remainderSpace;
-
-      while (remainingSpaces) {
-        for (let i = shiftPosition; i < visibleTitles.length; i++)
-          positions[i]!++;
-
-        remainingSpaces--;
-      }
-    }
-
-    return positions;
+    return this.getEvenlySpacedTitlePositions(-1);
   }
 
   get spaceAroundTitlePositions(): Array<number> {
-    return [0];
+    const visibleTitles = this.visibleTitles;
+    const edgeSpaceCount = 2;
+    const edgeSpaceFraction = edgeSpaceCount;
+    const inBetweenSpaceCount = visibleTitles.length - 1;
+
+    // In-between space must be double the edge space
+    const inBetweenSpaceFraction = inBetweenSpaceCount * 2;
+
+    const totalSpaceFraction = edgeSpaceFraction + inBetweenSpaceFraction;
+    const totalSpaceLength = this.size.width - this.totalTitleLength - 2;
+
+    const edgeSpaceLength = Math.floor(
+      ((edgeSpaceFraction / totalSpaceFraction) * totalSpaceLength) /
+      edgeSpaceCount
+    );
+
+    const inBetweenSpaceLength = Math.floor(
+      ((inBetweenSpaceFraction / totalSpaceFraction) * totalSpaceLength) /
+      inBetweenSpaceCount
+    );
+
+    return this.getSpacedTitlePositions(edgeSpaceLength, inBetweenSpaceLength);
   }
 
   get spaceEvenlyTitlePositions(): Array<number> {
-    return [0];
+    return this.getEvenlySpacedTitlePositions(1, true);
+  }
+
+  /**
+   * @param spaceCountAdjustment An increment or decrement in the number of
+   * spaces.
+   * @param [startWidthSpace=false] Whether or not to start with a space.
+   */
+  getEvenlySpacedTitlePositions(
+    spaceCountAdjustment: -1 | 1,
+    startWidthSpace = false
+  ): Array<number> {
+    const visibleTitles = this.visibleTitles;
+    const spaceCount = visibleTitles.length + spaceCountAdjustment;
+    const totalSpaceLength = this.size.width - this.totalTitleLength - 2;
+    const spaceLength = Math.floor(totalSpaceLength / spaceCount);
+
+    return this.getSpacedTitlePositions(
+      startWidthSpace ? spaceLength : 0,
+      spaceLength
+    );
+  }
+
+  getSpacedTitlePositions(edgeSpace: number, inBetweenSpace: number): Array<number> {
+    const visibleTitles = this.visibleTitles;
+    const edgeSpaceCount = 2;
+    const inBetweenSpaceCount = visibleTitles.length - 1;
+    const totalSpaceLength = this.size.width - this.totalTitleLength - 2;
+
+    const remainderSpace = totalSpaceLength - (edgeSpace * edgeSpaceCount + inBetweenSpace * inBetweenSpaceCount);
+
+    let positions = TitledBoxApi.getPositions(
+      visibleTitles,
+      edgeSpace,
+      inBetweenSpace,
+      remainderSpace
+    );
+
+    return positions;
   }
 
   get centerTitlePositions(): Array<number> {
     const startPositions = this.startTitlePositions;
     if (!startPositions.length) return startPositions;
     const gapLength = startPositions.length - 1;
+
     const padding = this.size.width - this.totalTitleLength - gapLength - TitledBoxApi.TOP_CORNER_LENGTH;
+
     const halfPadding = Math.floor(padding / 2);
     return startPositions.map(position => position + halfPadding);
   }
