@@ -49,6 +49,7 @@ export class TitledBoxApi implements TitledBoxData {
 
     return positions;
   }
+
   style: BorderStyle;
   size: Size;
   titles: Array<string>;
@@ -58,7 +59,7 @@ export class TitledBoxApi implements TitledBoxData {
     this.size = size;
     this.style = style;
     this.titles = titles;
-    this.titleJustify = titleJustify ?? 'space-between';
+    this.titleJustify = titleJustify ?? 'flex-start';
   }
 
   get borders(): Borders {
