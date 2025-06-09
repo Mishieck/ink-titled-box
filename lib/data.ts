@@ -1,4 +1,5 @@
 import type { BoxProps } from "ink";
+import type { BorderData } from "./border";
 
 export type Size = {
   width: number;
@@ -132,15 +133,12 @@ export const borderCharacters: Record<BorderStyle, BorderCharacters> = {
   singleDouble
 };
 
-export type Borders = {
-  bottom: string;
-  left: string;
-  right: string;
-  top: string;
-};
+export type BorderPosition = 'bottom' | 'left' | 'right' | 'top';
+export type Borders = Record<BorderPosition, BorderData>;
+export type CrossAxisBorderVisibilities = [start: boolean, end: boolean];
 
 export type TitledBoxOptions =
-  & Omit<TitledBoxData, 'borders' | 'titleJustify'>
+  & Omit<TitledBoxData, 'titleJustify'>
   & Partial<Pick<TitledBoxData, 'titleJustify'>>;
 
 export type TitledBoxData = {

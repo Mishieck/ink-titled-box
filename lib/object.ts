@@ -1,7 +1,9 @@
+import type { BorderData } from "./border";
 import type {
   BorderCharacters,
   Borders,
   BorderStyle,
+  CrossAxisBorderVisibilities,
   Size,
   TitledBoxData,
   TitledBoxOptions,
@@ -50,16 +52,36 @@ export class TitledBoxApi implements TitledBoxData {
     return positions;
   }
 
+  /**
+   * Subtracts edge characters lengths from border length. The characters are
+   * subtracted if the borders in the cross-axis are visible. If only one is
+   * visible `1` is subtracted. If both are visible, `2` is subtracted.
+   *
+   * @param length The available length.
+   * @param visibilities A list of visibility statuses of cross-axis borders.
+   */
+  static subtractEdgeBorders(
+    length: number,
+    visibilities: CrossAxisBorderVisibilities,
+  ): number {
+    for (const isVisible of visibilities) if (isVisible) length--;
+    return length;
+  }
+
   style: BorderStyle;
   size: Size;
   titles: Array<string>;
   titleJustify: TitleJustify;
+  #borders: Borders;
 
-  constructor({ size, style, titles, titleJustify }: TitledBoxOptions) {
+  constructor(options: TitledBoxOptions) {
+    const { size, style, titles, titleJustify, borders } = options;
+
     this.size = size;
     this.style = style;
     this.titles = titles;
     this.titleJustify = titleJustify ?? 'flex-start';
+    this.#borders = borders;
   }
 
   get borders(): Borders {
@@ -95,27 +117,52 @@ export class TitledBoxApi implements TitledBoxData {
     return TitledBoxApi.characters[this.style];
   }
 
-  get bottomBorder(): string {
-    if (this.size.width < 2) return '';
+  get emptyBorder(): BorderData {
+    return { center: '', isVisible: false };
+  }
+
+  get bottomBorder(): BorderData {
     const { bottomLeft, bottomRight, bottomCenter } = this.characters;
-    const center = bottomCenter.repeat(this.size.width - 2);
-    return `${bottomLeft}${center}${bottomRight}`;
+
+    const length = TitledBoxApi.subtractEdgeBorders(
+      this.size.width,
+      [this.#borders.left.isVisible, this.#borders.right.isVisible]
+    );
+
+    if (length < 0) return this.emptyBorder;
+    const center = bottomCenter.repeat(length);
+
+    return {
+      ...this.#borders.bottom,
+      center,
+      end: this.#borders.right.isVisible ? bottomRight : undefined,
+      start: this.#borders.left.isVisible ? bottomLeft : undefined,
+    };
   }
 
-  get leftBorder(): string {
-    return this.getVerticalBorder(this.characters.leftCenter);
+  get leftBorder(): BorderData {
+    return {
+      ...this.#borders.left,
+      center: this.getVerticalBorder(this.characters.leftCenter)
+    };
   }
 
-  get rightBorder(): string {
-    return this.getVerticalBorder(this.characters.rightCenter);
+  get rightBorder(): BorderData {
+    return {
+      ...this.#borders.right,
+      center: this.getVerticalBorder(this.characters.rightCenter)
+    };
   }
 
-  get topBorder(): string {
-    const { width } = this.size;
+  get topBorder(): BorderData {
+    const length = TitledBoxApi.subtractEdgeBorders(
+      this.size.width,
+      [this.#borders.left.isVisible, this.#borders.right.isVisible]
+    );
 
-    if (width < 2) return '';
+    if (length < 2) return this.emptyBorder;
     const { topLeft, topCenter, topRight } = this.characters;
-    const centerCharacters = new Array(width - 2).fill(topCenter);
+    const centerCharacters = new Array(length).fill(topCenter);
 
     /* NOTE: It's title positions that are looped over and not titles 
      * themselves. This is because titles that overflow are not assigned
@@ -132,7 +179,12 @@ export class TitledBoxApi implements TitledBoxData {
         }
       );
 
-    return `${topLeft}${centerCharacters.join('')}${topRight}`;
+    return {
+      ...this.#borders.top,
+      center: centerCharacters.join(''),
+      end: this.#borders.right.isVisible ? topRight : undefined,
+      start: this.#borders.left.isVisible ? topLeft : undefined,
+    };
   }
 
   get titlePositions(): Array<number> {
@@ -263,8 +315,13 @@ export class TitledBoxApi implements TitledBoxData {
   }
 
   getVerticalBorder(character: string): string {
+    const length = TitledBoxApi.subtractEdgeBorders(
+      this.size.height,
+      [this.#borders.bottom.isVisible, this.#borders.top.isVisible]
+    );
+
     return this.size.height > 1
-      ? new Array(this.size.height - 2).fill(character).join('\n')
+      ? new Array(length).fill(character).join('\n')
       : '';
   }
 

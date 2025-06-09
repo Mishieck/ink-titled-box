@@ -1,9 +1,9 @@
-import { Box, type DOMElement, measureElement, type BoxProps } from "ink";
+import { Box, type DOMElement, measureElement } from "ink";
 import type React from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { Size, TitledBoxData } from "./data";
+import type { Borders, Size, TitledBoxData } from "./data";
 import { TitledBoxApi } from "./object";
-import { Border } from "./border";
+import { BorderUi } from "./border";
 import {
   getOuterBoxProps,
   getInnerBoxProps,
@@ -37,6 +37,33 @@ export const TitledBox: React.FC<TitledBoxProps> = props => {
     ...outerBoxProps
   } = getOuterBoxProps(props);
 
+  const initialBorders: Borders = {
+    bottom: {
+      center: '',
+      color: borderBottomColor ?? borderColor,
+      dimColor: borderBottomDimColor ?? borderDimColor,
+      isVisible: borderBottom!
+    },
+    left: {
+      center: '',
+      color: borderLeftColor ?? borderColor,
+      dimColor: borderLeftDimColor ?? borderDimColor,
+      isVisible: borderLeft!
+    },
+    right: {
+      center: '',
+      color: borderRightColor ?? borderColor,
+      dimColor: borderRightDimColor ?? borderDimColor,
+      isVisible: borderRight!
+    },
+    top: {
+      center: '',
+      color: borderTopColor ?? borderColor,
+      dimColor: borderTopDimColor ?? borderDimColor,
+      isVisible: borderTop!
+    },
+  };
+
   const { height, width } = outerBoxProps;
 
   const size: Size = {
@@ -45,13 +72,18 @@ export const TitledBox: React.FC<TitledBoxProps> = props => {
   };
 
   const box = useMemo(
-    () => new TitledBoxApi({ size, style: borderStyle, titles, titleJustify }),
+    () => new TitledBoxApi({
+      size,
+      style: borderStyle,
+      titles,
+      titleJustify,
+      borders: initialBorders
+    }),
     []
   );
 
   const [data, setData] = useState<TitledBoxData>(box);
   const { borders } = data;
-  const { bottom, left, right, top } = borders;
 
   useEffect(
     () => {
@@ -64,33 +96,13 @@ export const TitledBox: React.FC<TitledBoxProps> = props => {
 
   return (
     <Box ref={boxRef} flexDirection="column" {...outerBoxProps}>
-      <Border
-        content={top}
-        color={borderTopColor ?? borderColor}
-        dimColor={borderTopDimColor}
-        show={borderTop}
-      />
+      <BorderUi {...borders.top} />
       <Box>
-        <Border
-          content={left}
-          color={borderLeftColor ?? borderColor}
-          dimColor={borderLeftDimColor}
-          show={borderLeft}
-        />
+        <BorderUi {...borders.left} />
         <Box flexGrow={1} {...innerBoxProps}></Box>
-        <Border
-          content={right}
-          color={borderRightColor ?? borderColor}
-          dimColor={borderRightDimColor}
-          show={borderRight}
-        />
+        <BorderUi {...borders.right} />
       </Box>
-      <Border
-        content={bottom}
-        color={borderBottomColor ?? borderColor}
-        dimColor={borderBottomDimColor}
-        show={borderBottom}
-      />
+      <BorderUi {...borders.bottom} />
     </Box>
   );
 };
