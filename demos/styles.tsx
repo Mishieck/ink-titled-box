@@ -1,6 +1,7 @@
 import type React from "react";
 import { borderCharacters, TitledBox, type BorderStyle } from "../main";
 import { Box, Text } from "ink";
+import { capitalize } from "./utils";
 
 const borderStyleNames = Object.keys(borderCharacters) as Array<BorderStyle>;
 
@@ -20,4 +21,3 @@ export const Styles: React.FC = () => (
   </Box>
 );
 
-const capitalize = (str: string) => `${str[0]?.toUpperCase()}${str.slice(1)}`;

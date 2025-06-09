@@ -1,10 +1,12 @@
 import { render, Text } from "ink";
 import { Styles } from "./demos/styles";
 import { Justify } from "./demos/justify";
+import { Visibility } from "./demos/visiblity";
 
 const demos = {
-  styles: Styles,
   justify: Justify,
+  styles: Styles,
+  visibility: Visibility,
 };
 
 const demo = process.argv[2];
