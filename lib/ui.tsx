@@ -9,6 +9,7 @@ import {
   getInnerBoxProps,
   type TitledBoxProps
 } from "./utils";
+import { TopBorderUi } from "./top-border/ui";
 
 export const TitledBox: React.FC<TitledBoxProps> = props => {
   const boxRef = useRef<DOMElement>(null);
@@ -34,6 +35,7 @@ export const TitledBox: React.FC<TitledBoxProps> = props => {
     borderRightDimColor,
     borderBottomDimColor,
 
+    titleStyles,
     ...outerBoxProps
   } = getOuterBoxProps(props);
 
@@ -73,17 +75,18 @@ export const TitledBox: React.FC<TitledBoxProps> = props => {
 
   const box = useMemo(
     () => new TitledBoxApi({
+      borders: initialBorders,
       size,
       style: borderStyle,
       titles,
       titleJustify,
-      borders: initialBorders
+      titleStyles
     }),
     []
   );
 
   const [data, setData] = useState<TitledBoxData>(box);
-  const { borders } = data;
+  const { borders, topBorderData } = data;
 
   useEffect(
     () => {
@@ -96,7 +99,7 @@ export const TitledBox: React.FC<TitledBoxProps> = props => {
 
   return (
     <Box ref={boxRef} flexDirection="column" {...outerBoxProps}>
-      <BorderUi {...borders.top} />
+      <TopBorderUi {...topBorderData} />
       <Box>
         <BorderUi {...borders.left} />
         <Box flexGrow={1} {...innerBoxProps}></Box>

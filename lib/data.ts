@@ -1,5 +1,6 @@
 import type { BoxProps } from "ink";
 import type { BorderData } from "./border";
+import type { TopBorder } from "./top-border/data";
 
 export type Size = {
   width: number;
@@ -137,8 +138,13 @@ export type BorderPosition = 'bottom' | 'left' | 'right' | 'top';
 export type Borders = Record<BorderPosition, BorderData>;
 export type CrossAxisBorderVisibilities = [start: boolean, end: boolean];
 
+export type TitleStyles = {
+  start: string;
+  end: string;
+};
+
 export type TitledBoxOptions =
-  & Omit<TitledBoxData, 'titleJustify'>
+  & Omit<TitledBoxData, 'titleJustify' | "topBorderData">
   & Partial<Pick<TitledBoxData, 'titleJustify'>>;
 
 export type TitledBoxData = {
@@ -146,6 +152,8 @@ export type TitledBoxData = {
   style: BorderStyle;
   titles: Array<string>;
   titleJustify: TitleJustify;
+  titleStyles?: TitleStyles;
   borders: Borders;
+  topBorderData: TopBorder;
 };
 

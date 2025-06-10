@@ -7,9 +7,11 @@ import type {
   Size,
   TitledBoxData,
   TitledBoxOptions,
-  TitleJustify
+  TitleJustify,
+  TitleStyles
 } from "./data";
 import { borderCharacters } from "./data";
+import type { TopBorder, TopBorderFragment } from "./top-border/data";
 
 export class TitledBoxApi implements TitledBoxData {
   static characters = borderCharacters;
@@ -72,15 +74,17 @@ export class TitledBoxApi implements TitledBoxData {
   size: Size;
   titles: Array<string>;
   titleJustify: TitleJustify;
+  titleStyles?: TitleStyles;
   #borders: Borders;
 
   constructor(options: TitledBoxOptions) {
-    const { size, style, titles, titleJustify, borders } = options;
+    const { borders, size, style, titles, titleJustify, titleStyles } = options;
 
     this.size = size;
     this.style = style;
     this.titles = titles;
     this.titleJustify = titleJustify ?? 'flex-start';
+    this.titleStyles = titleStyles;
     this.#borders = borders;
   }
 
@@ -184,6 +188,46 @@ export class TitledBoxApi implements TitledBoxData {
       center: centerCharacters.join(''),
       end: this.#borders.right.isVisible ? topRight : undefined,
       start: this.#borders.left.isVisible ? topLeft : undefined,
+    };
+  }
+
+  get topBorderData(): TopBorder {
+    const { center, color, dimColor, end, isVisible, start } = this.topBorder;
+    let currentPosition = 0;
+    const fragments: Array<TopBorderFragment> = [];
+    if (start) fragments.push({ content: start, isTitle: false });
+    const positions = this.titlePositions;
+
+    positions.forEach((position, i) => {
+      if (position > currentPosition) {
+        fragments.push(
+          { content: center.slice(currentPosition, position), isTitle: false }
+        );
+      }
+
+      const nextPosition = position + this.visibleTitles[i]!.length + 2;
+
+      fragments.push({
+        content: center.slice(position, nextPosition),
+        isTitle: true
+      });
+
+      currentPosition = nextPosition;
+    });
+
+    fragments.push({
+      content: center.slice(currentPosition, center.length),
+      isTitle: false
+    });
+
+    if (end) fragments.push({ content: end, isTitle: false });
+
+    return {
+      color,
+      dimColor,
+      fragments,
+      isVisible,
+      titleStyles: this.titleStyles
     };
   }
 
@@ -326,8 +370,8 @@ export class TitledBoxApi implements TitledBoxData {
   }
 
   toJSON(): TitledBoxData {
-    const { borders, size, style, titles, titleJustify } = this;
-    return { borders, size, style, titles, titleJustify };
+    const { borders, size, style, titles, titleJustify, topBorderData } = this;
+    return { borders, size, style, titles, titleJustify, topBorderData };
   }
 }
 

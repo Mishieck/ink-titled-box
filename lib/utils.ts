@@ -1,9 +1,11 @@
+import type { TitleStyles } from "./border";
 import type { BorderStyle, TitleJustify } from "./data";
 import type { BoxProps } from "ink";
 
 export type TitledBoxProps = Omit<BoxProps, 'borderStyle' | 'children'> & {
   titles: Array<string>;
   titleJustify?: TitleJustify,
+  titleStyles?: TitleStyles;
   borderStyle: BorderStyle;
   children: React.ReactNode;
 };
