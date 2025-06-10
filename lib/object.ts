@@ -3,7 +3,6 @@ import type {
   BorderCharacters,
   Borders,
   BorderStyle,
-  CrossAxisBorderVisibilities,
   Size,
   TitledBoxData,
   TitledBoxOptions,
@@ -12,63 +11,14 @@ import type {
 } from "./data";
 import { borderCharacters } from "./data";
 import type { TopBorder, TopBorderFragment } from "./top-border/data";
+import { getPositions, subtractEdgeBorders, TITLE_PADDING } from "./utils";
 
 export class TitledBoxApi implements TitledBoxData {
   static characters = borderCharacters;
   /** The left and right padding of the title. */
-  static TITLE_PADDING = 2;
+  static TITLE_PADDING = TITLE_PADDING;
   static TOP_CORNER_LENGTH = 2; // Top-left and Top-right characters
   static TITLE_GAP = 1;
-
-  static shiftPositions(positions: Array<number>, shiftCount: number): Array<number> {
-    const shiftPosition = Math.ceil(
-      (positions.length - shiftCount) / 2
-    );
-
-    let remainingSpaces = shiftCount;
-
-    while (remainingSpaces) {
-      for (let i = shiftPosition; i < positions.length; i++) positions[i]!++;
-      remainingSpaces--;
-    }
-
-    return positions;
-  }
-
-  static getPositions(titles: Array<string>, startPosition: number, spaceLength: number, shiftCount: number): Array<number> {
-    let positions: Array<number> = [];
-    let position = startPosition;
-
-    for (const title of titles) {
-      positions.push(position);
-      position += title.length + TitledBoxApi.TITLE_PADDING + spaceLength;
-    }
-
-    /* If there are spaces that have not been inserted, shift middle titles to
-     * the right by the number of spaces remaining. This ensures that the 
-     * title distribution is symmetrical at both ends.
-     */
-    if (shiftCount)
-      positions = this.shiftPositions(positions, shiftCount);
-
-    return positions;
-  }
-
-  /**
-   * Subtracts edge characters lengths from border length. The characters are
-   * subtracted if the borders in the cross-axis are visible. If only one is
-   * visible `1` is subtracted. If both are visible, `2` is subtracted.
-   *
-   * @param length The available length.
-   * @param visibilities A list of visibility statuses of cross-axis borders.
-   */
-  static subtractEdgeBorders(
-    length: number,
-    visibilities: CrossAxisBorderVisibilities,
-  ): number {
-    for (const isVisible of visibilities) if (isVisible) length--;
-    return length;
-  }
 
   style: BorderStyle;
   size: Size;
@@ -128,7 +78,7 @@ export class TitledBoxApi implements TitledBoxData {
   get bottomBorder(): BorderData {
     const { bottomLeft, bottomRight, bottomCenter } = this.characters;
 
-    const length = TitledBoxApi.subtractEdgeBorders(
+    const length = subtractEdgeBorders(
       this.size.width,
       [this.#borders.left.isVisible, this.#borders.right.isVisible]
     );
@@ -159,7 +109,7 @@ export class TitledBoxApi implements TitledBoxData {
   }
 
   get topBorder(): BorderData {
-    const length = TitledBoxApi.subtractEdgeBorders(
+    const length = subtractEdgeBorders(
       this.size.width,
       [this.#borders.left.isVisible, this.#borders.right.isVisible]
     );
@@ -337,7 +287,7 @@ export class TitledBoxApi implements TitledBoxData {
 
     const remainderSpace = totalSpaceLength - (edgeSpace * edgeSpaceCount + inBetweenSpace * inBetweenSpaceCount);
 
-    let positions = TitledBoxApi.getPositions(
+    let positions = getPositions(
       visibleTitles,
       edgeSpace,
       inBetweenSpace,
@@ -359,7 +309,7 @@ export class TitledBoxApi implements TitledBoxData {
   }
 
   getVerticalBorder(character: string): string {
-    const length = TitledBoxApi.subtractEdgeBorders(
+    const length = subtractEdgeBorders(
       this.size.height,
       [this.#borders.bottom.isVisible, this.#borders.top.isVisible]
     );
