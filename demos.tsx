@@ -2,11 +2,15 @@ import { render, Text } from "ink";
 import { Styles } from "./demos/styles";
 import { Justify } from "./demos/justify";
 import { Visibility } from "./demos/visiblity";
+import { TitleStylesUi } from "./demos/title-styles";
+import { Colors } from "./demos/colors";
 
 const demos = {
+  colors: Colors,
   justify: Justify,
   styles: Styles,
   visibility: Visibility,
+  'title-styles': TitleStylesUi
 };
 
 const demo = process.argv[2];
