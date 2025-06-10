@@ -3,9 +3,6 @@
   "workspaces": {
     "": {
       "name": "ink-scroll-area",
-      "dependencies": {
-        "@mishieck/observable": "npm:@jsr/mishieck__observable",
-      },
       "devDependencies": {
         "@types/bun": "latest",
         "@types/react": "^19.1.6",
@@ -19,8 +16,6 @@
   },
   "packages": {
     "@alcalzone/ansi-tokenize": ["@alcalzone/ansi-tokenize@0.1.3", "", { "dependencies": { "ansi-styles": "^6.2.1", "is-fullwidth-code-point": "^4.0.0" } }, "sha512-3yWxPTq3UQ/FY9p1ErPxIyfT64elWaMvM9lIHnaqpyft63tkxodF5aUElYHrdisWve5cETkh1+KBw1yJuW0aRw=="],
-
-    "@mishieck/observable": ["@jsr/mishieck__observable@0.1.1", "https://npm.jsr.io/~/11/@jsr/mishieck__observable/0.1.1.tgz", {}, "sha512-U4/7HSQ5heqL0wXuHnkeKc0b5Bn42e341ilK2oFN6buWmqJyg7Z14LQHT4C9DhO2qN3mc8nrqyPU9OvEndGsRw=="],
 
     "@types/bun": ["@types/bun@1.2.15", "", { "dependencies": { "bun-types": "1.2.15" } }, "sha512-U1ljPdBEphF0nw1MIk0hI7kPg7dFdPyM7EenHsp6W5loNHl7zqy6JQf/RKCgnUn2KDzUpkBwHPnEJEjII594bA=="],
 

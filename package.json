@@ -1,11 +1,6 @@
 {
   "name": "ink-titled-box",
   "module": "main.ts",
-  "type": "module",
-  "scripts": {
-    "demo": "bun run demos.tsx",
-    "build": "bun build --target='node' main.ts"
-  },
   "devDependencies": {
     "@types/bun": "latest",
     "@types/react": "^19.1.6"
@@ -15,7 +10,9 @@
     "react": "^19.1.0",
     "typescript": "^5"
   },
-  "dependencies": {
-    "@mishieck/observable": "npm:@jsr/mishieck__observable"
-  }
+  "scripts": {
+    "demo": "bun run demos.tsx",
+    "build": "bun build --target='node' main.ts"
+  },
+  "type": "module"
 }
