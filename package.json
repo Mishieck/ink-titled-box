@@ -1,9 +1,10 @@
 {
   "name": "ink-titled-box",
-  "module": "main.tsx",
+  "module": "main.ts",
   "type": "module",
   "scripts": {
-    "demo": "bun run demos.tsx"
+    "demo": "bun run demos.tsx",
+    "build": "bun build --target='node' main.ts"
   },
   "devDependencies": {
     "@types/bun": "latest",
