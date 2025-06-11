@@ -14,10 +14,16 @@ import type { TopBorder, TopBorderFragment } from "./top-border/data";
 import { getPositions, subtractEdgeBorders, TITLE_PADDING } from "./utils";
 
 export class TitledBoxApi implements TitledBoxData {
+  /** The characters used to build borders borders. */
   static characters = borderCharacters;
+
   /** The left and right padding of the title. */
   static TITLE_PADDING = TITLE_PADDING;
-  static TOP_CORNER_LENGTH = 2; // Top-left and Top-right characters
+
+  /** Top-left and Top-right characters. */
+  static TOP_CORNER_LENGTH = 2;
+
+  /** The gap between titles. */
   static TITLE_GAP = 1;
 
   style: BorderStyle;
@@ -38,6 +44,7 @@ export class TitledBoxApi implements TitledBoxData {
     this.#borders = borders;
   }
 
+  /** The borders of the four sides of the box. */
   get borders(): Borders {
     return {
       bottom: this.bottomBorder,
@@ -47,6 +54,7 @@ export class TitledBoxApi implements TitledBoxData {
     }
   }
 
+  /** The number of visible titles. */
   get visibleTitleCount(): number {
     let count = 0;
     let length = TitledBoxApi.TOP_CORNER_LENGTH;
@@ -63,6 +71,7 @@ export class TitledBoxApi implements TitledBoxData {
     return count;
   }
 
+  /** The titles that are visible. Titles that overflow are hidden. */
   get visibleTitles(): Array<string> {
     return this.titles.slice(0, this.visibleTitleCount);
   }
@@ -71,6 +80,10 @@ export class TitledBoxApi implements TitledBoxData {
     return TitledBoxApi.characters[this.style];
   }
 
+  /**
+   * The border uses if a border can not be created. One of the causes of this
+   * is the border having insufficient length.
+   */
   get emptyBorder(): BorderData {
     return { center: '', isVisible: false };
   }
@@ -141,6 +154,7 @@ export class TitledBoxApi implements TitledBoxData {
     };
   }
 
+  /** The data for the top border. */
   get topBorderData(): TopBorder {
     const { center, color, dimColor, end, isVisible, start } = this.topBorder;
     let currentPosition = 0;
@@ -181,9 +195,11 @@ export class TitledBoxApi implements TitledBoxData {
     };
   }
 
+  /**
+   * The positions of the titles. The positions are calculated according the
+   * `titleJustify` prop. The positions take title padding into account.
+   */
   get titlePositions(): Array<number> {
-    // NOTE: Should take title padding into account
-
     switch (this.titleJustify) {
       case "flex-start": return this.startTitlePositions;
       case "flex-end": return this.endTitlePositions;
@@ -194,6 +210,7 @@ export class TitledBoxApi implements TitledBoxData {
     }
   }
 
+  /** The total length of visible padded titles. */
   get totalTitleLength(): number {
     return this
       .visibleTitles
@@ -203,6 +220,7 @@ export class TitledBoxApi implements TitledBoxData {
       );
   }
 
+  /** Title positions for `titleJustify="flex-start"`. */
   get startTitlePositions(): Array<number> {
     const positions: Array<number> = [];
     let position = 0;
@@ -215,6 +233,7 @@ export class TitledBoxApi implements TitledBoxData {
     return positions;
   }
 
+  /** Title positions for `titleJustify="flex-end"`. */
   get endTitlePositions(): Array<number> {
     const startPositions = this.startTitlePositions;
     if (!startPositions.length) return startPositions;
@@ -226,10 +245,12 @@ export class TitledBoxApi implements TitledBoxData {
     return startPositions.map(position => position + padding);
   }
 
+  /** Title positions for `titleJustify="space-between"`. */
   get spaceBetweenTitlePositions(): Array<number> {
     return this.getEvenlySpacedTitlePositions(-1);
   }
 
+  /** Title positions for `titleJustify="space-around"`. */
   get spaceAroundTitlePositions(): Array<number> {
     const visibleTitles = this.visibleTitles;
     const edgeSpaceCount = 2;
@@ -255,11 +276,15 @@ export class TitledBoxApi implements TitledBoxData {
     return this.getSpacedTitlePositions(edgeSpaceLength, inBetweenSpaceLength);
   }
 
+  /** Title positions for `titleJustify="space-evenly"`. */
   get spaceEvenlyTitlePositions(): Array<number> {
     return this.getEvenlySpacedTitlePositions(1, true);
   }
 
   /**
+   * Calculates positions for layout with equal spaces between titles and on the
+   * edges.
+   *
    * @param spaceCountAdjustment An increment or decrement in the number of
    * spaces.
    * @param [startWidthSpace=false] Whether or not to start with a space.
@@ -279,7 +304,11 @@ export class TitledBoxApi implements TitledBoxData {
     );
   }
 
-  getSpacedTitlePositions(edgeSpace: number, inBetweenSpace: number): Array<number> {
+  /** Calculates positions for layouts with spaces between titles. */
+  getSpacedTitlePositions(
+    edgeSpace: number,
+    inBetweenSpace: number
+  ): Array<number> {
     const visibleTitles = this.visibleTitles;
     const edgeSpaceCount = 2;
     const inBetweenSpaceCount = visibleTitles.length - 1;
@@ -297,6 +326,7 @@ export class TitledBoxApi implements TitledBoxData {
     return positions;
   }
 
+  /** Title positions for `titleJustify="center"`. */
   get centerTitlePositions(): Array<number> {
     const startPositions = this.startTitlePositions;
     if (!startPositions.length) return startPositions;
@@ -308,6 +338,7 @@ export class TitledBoxApi implements TitledBoxData {
     return startPositions.map(position => position + halfPadding);
   }
 
+  /** Creates a vertical border. */
   getVerticalBorder(character: string): string {
     const length = subtractEdgeBorders(
       this.size.height,
@@ -319,6 +350,7 @@ export class TitledBoxApi implements TitledBoxData {
       : '';
   }
 
+  /** Creates a JSON object containing `TitledBoxData`. */
   toJSON(): TitledBoxData {
     const { borders, size, style, titles, titleJustify, topBorderData } = this;
     return { borders, size, style, titles, titleJustify, topBorderData };
