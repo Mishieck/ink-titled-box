@@ -10,8 +10,18 @@ import type {
   TitleStyles
 } from "./data";
 import { borderCharacters } from "./data";
-import type { TopBorder, TopBorderFragment } from "./top-border/data";
-import { getPositions, subtractEdgeBorders, TITLE_PADDING } from "./utils";
+import type { TopBorder } from "./top-border/data";
+import {
+  getCenterTitlePositions,
+  getEndTitlePositions,
+  getSpaceAroundTitlePositions,
+  getSpacedTitlePositions,
+  getStartTitlePositions,
+  getTopBorderData,
+  subtractEdgeBorders,
+  TITLE_PADDING,
+  TOP_CORNER_LENGTH
+} from "./utils";
 
 export class TitledBoxApi implements TitledBoxData {
   /** The characters used to build borders borders. */
@@ -21,7 +31,7 @@ export class TitledBoxApi implements TitledBoxData {
   static TITLE_PADDING = TITLE_PADDING;
 
   /** Top-left and Top-right characters. */
-  static TOP_CORNER_LENGTH = 2;
+  static TOP_CORNER_LENGTH = TOP_CORNER_LENGTH;
 
   /** The gap between titles. */
   static TITLE_GAP = 1;
@@ -63,7 +73,6 @@ export class TitledBoxApi implements TitledBoxData {
       const title = this.titles[count]!;
       length += title.length + TitledBoxApi.TITLE_PADDING;
       if (count > 0) length += TitledBoxApi.TITLE_GAP;
-
       if (length < this.size.width) count++;
       else break;
     }
@@ -156,43 +165,12 @@ export class TitledBoxApi implements TitledBoxData {
 
   /** The data for the top border. */
   get topBorderData(): TopBorder {
-    const { center, color, dimColor, end, isVisible, start } = this.topBorder;
-    let currentPosition = 0;
-    const fragments: Array<TopBorderFragment> = [];
-    if (start) fragments.push({ content: start, isTitle: false });
-    const positions = this.titlePositions;
-
-    positions.forEach((position, i) => {
-      if (position > currentPosition) {
-        fragments.push(
-          { content: center.slice(currentPosition, position), isTitle: false }
-        );
-      }
-
-      const nextPosition = position + this.visibleTitles[i]!.length + 2;
-
-      fragments.push({
-        content: center.slice(position, nextPosition),
-        isTitle: true
-      });
-
-      currentPosition = nextPosition;
-    });
-
-    fragments.push({
-      content: center.slice(currentPosition, center.length),
-      isTitle: false
-    });
-
-    if (end) fragments.push({ content: end, isTitle: false });
-
-    return {
-      color,
-      dimColor,
-      fragments,
-      isVisible,
-      titleStyles: this.titleStyles
-    };
+    return getTopBorderData(
+      this.topBorder,
+      this.titlePositions,
+      this.visibleTitles,
+      this.titleStyles
+    );
   }
 
   /**
@@ -222,27 +200,16 @@ export class TitledBoxApi implements TitledBoxData {
 
   /** Title positions for `titleJustify="flex-start"`. */
   get startTitlePositions(): Array<number> {
-    const positions: Array<number> = [];
-    let position = 0;
-
-    this.visibleTitles.forEach((title, i) => {
-      positions.push(position);
-      position += title.length + 3; // padding + gap = 3
-    });
-
-    return positions;
+    return getStartTitlePositions(this.visibleTitles);
   }
 
   /** Title positions for `titleJustify="flex-end"`. */
   get endTitlePositions(): Array<number> {
-    const startPositions = this.startTitlePositions;
-    if (!startPositions.length) return startPositions;
-    const gapLength = startPositions.length - 1;
-
-    const padding = this.size.width - this.totalTitleLength - gapLength -
-      TitledBoxApi.TOP_CORNER_LENGTH;
-
-    return startPositions.map(position => position + padding);
+    return getEndTitlePositions(
+      this.startTitlePositions,
+      this.size.width,
+      this.totalTitleLength
+    );
   }
 
   /** Title positions for `titleJustify="space-between"`. */
@@ -252,29 +219,12 @@ export class TitledBoxApi implements TitledBoxData {
 
   /** Title positions for `titleJustify="space-around"`. */
   get spaceAroundTitlePositions(): Array<number> {
-    const visibleTitles = this.visibleTitles;
-    const edgeSpaceCount = 2;
-    const edgeSpaceFraction = edgeSpaceCount;
-    const inBetweenSpaceCount = visibleTitles.length - 1;
-
-    // In-between space must be double the edge space
-    const inBetweenSpaceFraction = inBetweenSpaceCount * 2;
-
-    const totalSpaceFraction = edgeSpaceFraction + inBetweenSpaceFraction;
-    const totalSpaceLength = this.size.width - this.totalTitleLength - 2;
-
-    const edgeSpaceLength = Math.floor(
-      ((edgeSpaceFraction / totalSpaceFraction) * totalSpaceLength) /
-      edgeSpaceCount
+    return getSpaceAroundTitlePositions(
+      this.visibleTitles,
+      this.size.width,
+      this.totalTitleLength
     );
-
-    const inBetweenSpaceLength = Math.floor(
-      ((inBetweenSpaceFraction / totalSpaceFraction) * totalSpaceLength) /
-      inBetweenSpaceCount
-    );
-
-    return this.getSpacedTitlePositions(edgeSpaceLength, inBetweenSpaceLength);
-  }
+  };
 
   /** Title positions for `titleJustify="space-evenly"`. */
   get spaceEvenlyTitlePositions(): Array<number> {
@@ -298,44 +248,22 @@ export class TitledBoxApi implements TitledBoxData {
     const totalSpaceLength = this.size.width - this.totalTitleLength - 2;
     const spaceLength = Math.floor(totalSpaceLength / spaceCount);
 
-    return this.getSpacedTitlePositions(
-      startWidthSpace ? spaceLength : 0,
-      spaceLength
-    );
-  }
-
-  /** Calculates positions for layouts with spaces between titles. */
-  getSpacedTitlePositions(
-    edgeSpace: number,
-    inBetweenSpace: number
-  ): Array<number> {
-    const visibleTitles = this.visibleTitles;
-    const edgeSpaceCount = 2;
-    const inBetweenSpaceCount = visibleTitles.length - 1;
-    const totalSpaceLength = this.size.width - this.totalTitleLength - 2;
-
-    const remainderSpace = totalSpaceLength - (edgeSpace * edgeSpaceCount + inBetweenSpace * inBetweenSpaceCount);
-
-    let positions = getPositions(
+    return getSpacedTitlePositions({
       visibleTitles,
-      edgeSpace,
-      inBetweenSpace,
-      remainderSpace
-    );
-
-    return positions;
+      width: this.size.width,
+      totalTitleLength: this.totalTitleLength,
+      edgeSpace: startWidthSpace ? spaceLength : 0,
+      inBetweenSpace: spaceLength
+    });
   }
 
   /** Title positions for `titleJustify="center"`. */
   get centerTitlePositions(): Array<number> {
-    const startPositions = this.startTitlePositions;
-    if (!startPositions.length) return startPositions;
-    const gapLength = startPositions.length - 1;
-
-    const padding = this.size.width - this.totalTitleLength - gapLength - TitledBoxApi.TOP_CORNER_LENGTH;
-
-    const halfPadding = Math.floor(padding / 2);
-    return startPositions.map(position => position + halfPadding);
+    return getCenterTitlePositions(
+      this.startTitlePositions,
+      this.size.width,
+      this.totalTitleLength
+    );
   }
 
   /** Creates a vertical border. */
@@ -356,4 +284,3 @@ export class TitledBoxApi implements TitledBoxData {
     return { borders, size, style, titles, titleJustify, topBorderData };
   }
 }
-

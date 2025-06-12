@@ -5,6 +5,8 @@ import type {
   TitleJustify
 } from "./data";
 import type { BoxProps } from "ink";
+import type { TopBorder, TopBorderFragment } from "./top-border/data";
+import type { BorderData } from "./border";
 
 export type TitledBoxProps = Omit<BoxProps, 'borderStyle' | 'children'> & {
   titles: Array<string>;
@@ -12,6 +14,14 @@ export type TitledBoxProps = Omit<BoxProps, 'borderStyle' | 'children'> & {
   titleStyles?: TitleStyles;
   borderStyle: BorderStyle;
   children: React.ReactNode;
+};
+
+export type SpacedTitlePositionsData = {
+  visibleTitles: Array<string>,
+  width: number,
+  totalTitleLength: number,
+  edgeSpace: number,
+  inBetweenSpace: number
 };
 
 export const innerBoxPropNames = [
@@ -39,6 +49,7 @@ export type InnerBoxProps = Pick<TitledBoxProps, InnerBoxPropName>;
 export type OuterBoxProps = Omit<TitledBoxProps, InnerBoxPropName>;
 
 export const TITLE_PADDING = 2;
+export const TOP_CORNER_LENGTH = 2;
 
 export const getInnerBoxProps = (props: TitledBoxProps): InnerBoxProps => {
   const innerBoxProps = innerBoxPropNames.reduce(
@@ -92,6 +103,52 @@ export const shiftPositions = (
   return positions;
 };
 
+/** The data for the top border. */
+export const getTopBorderData = (
+  topBorder: BorderData,
+  titlePositions: Array<number>,
+  visibleTitles: Array<string>,
+  titleStyles?: TitleStyles
+): TopBorder => {
+  const { center, color, dimColor, end, isVisible, start } = topBorder;
+  let currentPosition = 0;
+  const fragments: Array<TopBorderFragment> = [];
+  if (start) fragments.push({ content: start, isTitle: false });
+  const positions = titlePositions;
+
+  positions.forEach((position, i) => {
+    if (position > currentPosition) {
+      fragments.push(
+        { content: center.slice(currentPosition, position), isTitle: false }
+      );
+    }
+
+    const nextPosition = position + visibleTitles[i]!.length + 2;
+
+    fragments.push({
+      content: center.slice(position, nextPosition),
+      isTitle: true
+    });
+
+    currentPosition = nextPosition;
+  });
+
+  fragments.push({
+    content: center.slice(currentPosition, center.length),
+    isTitle: false
+  });
+
+  if (end) fragments.push({ content: end, isTitle: false });
+
+  return {
+    color,
+    dimColor,
+    fragments,
+    isVisible,
+    titleStyles
+  };
+};
+
 export const getPositions = (
   titles: Array<string>,
   startPosition: number,
@@ -129,4 +186,105 @@ export const subtractEdgeBorders = (
 ): number => {
   for (const isVisible of visibilities) if (isVisible) length--;
   return length;
+};
+
+export const getStartTitlePositions = (titles: Array<string>): Array<number> => {
+  const positions: Array<number> = [];
+  let position = 0;
+
+  titles.forEach((title, i) => {
+    positions.push(position);
+    position += title.length + 3; // padding + gap = 3
+  });
+
+  return positions;
+};
+
+export const getEndTitlePositions = (
+  startTitlePositions: Array<number>,
+  width: number,
+  totalTitleLength: number,
+): Array<number> => {
+  const startPositions = startTitlePositions;
+  if (!startPositions.length) return startPositions;
+  const gapLength = startPositions.length - 1;
+  const padding = width - totalTitleLength - gapLength - TOP_CORNER_LENGTH;
+  return startPositions.map(position => position + padding);
+};
+
+/** Title positions for `titleJustify="space-around"`. */
+export const getSpaceAroundTitlePositions = (
+  visibleTitles: Array<string>,
+  width: number,
+  totalTitleLength: number
+): Array<number> => {
+  const edgeSpaceCount = 2;
+  const edgeSpaceFraction = edgeSpaceCount;
+  const inBetweenSpaceCount = visibleTitles.length - 1;
+
+  // In-between space must be double the edge space
+  const inBetweenSpaceFraction = inBetweenSpaceCount * 2;
+
+  const totalSpaceFraction = edgeSpaceFraction + inBetweenSpaceFraction;
+  const totalSpaceLength = width - totalTitleLength - 2;
+
+  const edgeSpaceLength = Math.floor(
+    ((edgeSpaceFraction / totalSpaceFraction) * totalSpaceLength) /
+    edgeSpaceCount
+  );
+
+  const inBetweenSpaceLength = Math.floor(
+    ((inBetweenSpaceFraction / totalSpaceFraction) * totalSpaceLength) /
+    inBetweenSpaceCount
+  );
+
+  return getSpacedTitlePositions({
+    visibleTitles,
+    width,
+    totalTitleLength,
+    edgeSpace: edgeSpaceLength,
+    inBetweenSpace: inBetweenSpaceLength
+  });
+}
+
+/** Calculates positions for layouts with spaces between titles. */
+export const getSpacedTitlePositions = (
+  data: SpacedTitlePositionsData
+): Array<number> => {
+  const {
+    visibleTitles,
+    width,
+    totalTitleLength,
+    edgeSpace,
+    inBetweenSpace
+  } = data;
+
+  const edgeSpaceCount = 2;
+  const inBetweenSpaceCount = visibleTitles.length - 1;
+  const totalSpaceLength = width - totalTitleLength - 2;
+
+  const remainderSpace = totalSpaceLength - (edgeSpace * edgeSpaceCount + inBetweenSpace * inBetweenSpaceCount);
+
+  let positions = getPositions(
+    visibleTitles,
+    edgeSpace,
+    inBetweenSpace,
+    remainderSpace
+  );
+
+  return positions;
+};
+
+/** Title positions for `titleJustify="center"`. */
+export const getCenterTitlePositions = (
+  startTitlePositions: Array<number>,
+  width: number,
+  totalTitleLength: number
+): Array<number> => {
+  const startPositions = startTitlePositions;
+  if (!startPositions.length) return startPositions;
+  const gapLength = startPositions.length - 1;
+  const padding = width - totalTitleLength - gapLength - TOP_CORNER_LENGTH;
+  const halfPadding = Math.floor(padding / 2);
+  return startPositions.map(position => position + halfPadding);
 };
