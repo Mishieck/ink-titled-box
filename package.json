@@ -1,18 +1,37 @@
 {
-  "name": "ink-titled-box",
-  "module": "main.ts",
+  "name": "@mishieck/ink-titled-box",
+  "exports": {
+    "default": "./dist/main.js",
+    "types": "./dist/main.d.ts"
+  },
   "devDependencies": {
     "@types/bun": "latest",
-    "@types/react": "^19.1.6"
+    "@types/react": "^19.1.6",
+    "bun-plugin-dts": "^0.3.0"
+  },
+  "files": [
+    "dist"
+  ],
+  "license": "MIT",
+  "author": {
+    "name": "Mishieck Mwale",
+    "email": "mishieckdev@gmail.com",
+    "url": "https://mishieck.vercel.app"
   },
   "peerDependencies": {
     "ink": "^6.0.0",
     "react": "^19.1.0",
     "typescript": "^5"
   },
+  "repository": {
+    "url": "https://github.com/Mishieck/ink-titled-box"
+  },
   "scripts": {
     "demo": "bun run demos.tsx",
-    "build": "bun build --target='node' main.ts"
+    "build": "bun build.ts"
   },
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "react-devtools-core": "^6.1.2"
+  }
 }
