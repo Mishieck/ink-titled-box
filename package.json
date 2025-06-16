@@ -1,5 +1,7 @@
 {
   "name": "@mishieck/ink-titled-box",
+  "version": "0.1.0",
+  "description": "A component for using titled borders in Ink.",
   "exports": {
     "default": "./dist/main.js",
     "types": "./dist/main.d.ts"
