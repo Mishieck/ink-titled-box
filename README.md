@@ -34,5 +34,5 @@ An array of titles for the border.
 
 ### titleStyles
 
-The styles of titles as shown in [Title Styles)(#title-styles). Without styles,
+The styles of titles as shown in [Title Styles](#title-styles). Without styles,
 the titles have a transparent background and padded on both ends with a space.
