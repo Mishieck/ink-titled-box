@@ -3,13 +3,11 @@
   "workspaces": {
     "": {
       "name": "ink-titled-box",
-      "dependencies": {
-        "react-devtools-core": "^6.1.2",
-      },
       "devDependencies": {
         "@types/bun": "latest",
         "@types/react": "^19.1.6",
         "bun-plugin-dts": "^0.3.0",
+        "react-devtools-core": "^6.1.2",
       },
       "peerDependencies": {
         "ink": "^6.0.0",

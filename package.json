@@ -1,16 +1,30 @@
 {
   "name": "@mishieck/ink-titled-box",
   "version": "0.1.0",
-  "description": "A component for using titled borders in Ink.",
-  "exports": {
-    "default": "./dist/main.js",
-    "types": "./dist/main.d.ts"
+  "author": {
+    "name": "Mishieck Mwale",
+    "email": "mishieckdev@gmail.com",
+    "url": "https://mishieck.vercel.app"
+  },
+  "repository": {
+    "url": "https://github.com/Mishieck/ink-titled-box"
   },
   "devDependencies": {
     "@types/bun": "latest",
     "@types/react": "^19.1.6",
-    "bun-plugin-dts": "^0.3.0"
+    "bun-plugin-dts": "^0.3.0",
+    "react-devtools-core": "^6.1.2"
   },
+  "peerDependencies": {
+    "ink": "^6.0.0",
+    "react": "^19.1.0",
+    "typescript": "^5"
+  },
+  "exports": {
+    "default": "./dist/main.js",
+    "types": "./dist/main.d.ts"
+  },
+  "description": "A component for using titled borders in Ink.",
   "files": [
     "dist"
   ],
@@ -20,25 +34,9 @@
     "titled-borders"
   ],
   "license": "MIT",
-  "author": {
-    "name": "Mishieck Mwale",
-    "email": "mishieckdev@gmail.com",
-    "url": "https://mishieck.vercel.app"
-  },
-  "peerDependencies": {
-    "ink": "^6.0.0",
-    "react": "^19.1.0",
-    "typescript": "^5"
-  },
-  "repository": {
-    "url": "https://github.com/Mishieck/ink-titled-box"
-  },
   "scripts": {
     "demo": "bun run demos.tsx",
     "build": "bun build.ts"
   },
-  "type": "module",
-  "dependencies": {
-    "react-devtools-core": "^6.1.2"
-  }
+  "type": "module"
 }
