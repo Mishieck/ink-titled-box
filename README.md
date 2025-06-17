@@ -4,6 +4,22 @@ A component for using titled borders in [Ink](
 https://github.com/vadimdemedes/ink). It is an extension of the `Box` component
 of Ink.
 
+## Installation
+
+The library uses the peer dependencies `react` and `ink`.
+
+### NPM
+
+```sh
+npm i @mishieck/ink-titled-box
+```
+
+### Bun
+
+```sh
+bun add @mishieck/ink-titled-box
+```
+
 ## Features
 
 ### Border Styles
