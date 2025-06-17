@@ -38,3 +38,24 @@ An array of titles for the border.
 
 The styles of titles as shown in [Title Styles](#title-styles). Without styles,
 the titles have a transparent background and padded on both ends with a space.
+The value is an object with the following properties:
+
+- `start`: the character before the title. 
+- `end`: the character after the title.
+
+The library provides some title styles through the export `titleStyles`. You can
+create your own in addition to those. You can use the provided styles as
+follows:
+
+```tsx
+import React from "react";
+import {TitledBox, titleStyles} from "@mishieck/ink-titled-box";
+
+const Demo: React.FC = () => (
+    <TitledBox
+        borderStyle="single"
+        titles={["Demo"]}
+        titleStyles={titleStyles.rectangle}
+    />
+);
+```
