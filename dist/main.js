@@ -1,3 +1,18 @@
+// lib/border/ui.tsx
+import { Text } from "ink";
+import { jsxDEV } from "react/jsx-dev-runtime";
+var BorderUi = (props) => {
+  const { color, start, center, end, isVisible, dimColor } = props;
+  return isVisible ? /* @__PURE__ */ jsxDEV(Text, {
+    color,
+    dimColor,
+    children: [
+      start,
+      center,
+      end
+    ]
+  }, undefined, true, undefined, this) : null;
+};
 // lib/data.ts
 var arrow = {
   topLeft: "↘",
@@ -89,6 +104,11 @@ var borderCharacters = {
   single,
   singleDouble
 };
+var titleStyles = {
+  rectangle: { start: " ", end: " " },
+  pill: { start: "", end: "" },
+  hexagon: { start: "", end: "" }
+};
 // lib/utils.ts
 var innerBoxPropNames = [
   "children",
@@ -141,7 +161,7 @@ var shiftPositions = (positions, shiftCount) => {
   }
   return positions;
 };
-var getTopBorderData = (topBorder, titlePositions, visibleTitles, titleStyles) => {
+var getTopBorderData = (topBorder, titlePositions, visibleTitles, titleStyles2) => {
   const { center, color, dimColor, end, isVisible, start } = topBorder;
   let currentPosition = 0;
   const fragments = [];
@@ -170,7 +190,7 @@ var getTopBorderData = (topBorder, titlePositions, visibleTitles, titleStyles) =
     dimColor,
     fragments,
     isVisible,
-    titleStyles
+    titleStyles: titleStyles2
   };
 };
 var getPositions = (titles, startPosition, spaceLength, shiftCount) => {
@@ -224,14 +244,14 @@ var getSpaceAroundTitlePositions = (visibleTitles, width, totalTitleLength) => {
     inBetweenSpace: inBetweenSpaceLength
   });
 };
-var getSpacedTitlePositions = (data) => {
+var getSpacedTitlePositions = (data2) => {
   const {
     visibleTitles,
     width,
     totalTitleLength,
     edgeSpace,
     inBetweenSpace
-  } = data;
+  } = data2;
   const edgeSpaceCount = 2;
   const inBetweenSpaceCount = visibleTitles.length - 1;
   const totalSpaceLength = width - totalTitleLength - 2;
@@ -262,12 +282,12 @@ class TitledBoxApi {
   titleStyles;
   #borders;
   constructor(options) {
-    const { borders, size, style, titles, titleJustify, titleStyles } = options;
+    const { borders, size, style, titles, titleJustify, titleStyles: titleStyles2 } = options;
     this.size = size;
     this.style = style;
     this.titles = titles;
     this.titleJustify = titleJustify ?? "flex-start";
-    this.titleStyles = titleStyles;
+    this.titleStyles = titleStyles2;
     this.#borders = borders;
   }
   get borders() {
@@ -408,35 +428,17 @@ class TitledBoxApi {
     return { borders, size, style, titles, titleJustify, topBorderData };
   }
 }
-// lib/ui.tsx
-import { Box, measureElement } from "ink";
-import { useEffect, useMemo, useRef, useState } from "react";
-// lib/border/ui.tsx
-import { Text } from "ink";
-import { jsxDEV } from "react/jsx-dev-runtime";
-var BorderUi = (props) => {
-  const { color, start, center, end, isVisible, dimColor } = props;
-  return isVisible ? /* @__PURE__ */ jsxDEV(Text, {
-    color,
-    dimColor,
-    children: [
-      start,
-      center,
-      end
-    ]
-  }, undefined, true, undefined, this) : null;
-};
 // lib/top-border/ui.tsx
 import { Text as Text2 } from "ink";
 import { jsxDEV as jsxDEV2, Fragment } from "react/jsx-dev-runtime";
 var TopBorderUi = (props) => {
-  const { fragments, color, dimColor, isVisible, titleStyles } = props;
+  const { fragments, color, dimColor, isVisible, titleStyles: titleStyles2 } = props;
   return isVisible ? /* @__PURE__ */ jsxDEV2(Text2, {
     color,
     dimColor,
-    children: fragments.map(({ isTitle, content }, i) => isTitle && titleStyles ? /* @__PURE__ */ jsxDEV2(StyledTitle, {
+    children: fragments.map(({ isTitle, content }, i) => isTitle && titleStyles2 ? /* @__PURE__ */ jsxDEV2(StyledTitle, {
       content: content.trim(),
-      styles: titleStyles
+      styles: titleStyles2
     }, i, false, undefined, this) : /* @__PURE__ */ jsxDEV2(Text2, {
       children: content
     }, i, false, undefined, this))
@@ -460,8 +462,9 @@ var StyledTitleEdge = ({ children }) => /* @__PURE__ */ jsxDEV2(Text2, {
   inverse: children === " ",
   children
 }, undefined, false, undefined, this);
-
 // lib/ui.tsx
+import { Box, measureElement } from "ink";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { jsxDEV as jsxDEV3 } from "react/jsx-dev-runtime";
 var TitledBox = (props) => {
   const boxRef = useRef(null);
@@ -484,7 +487,7 @@ var TitledBox = (props) => {
     borderLeftDimColor,
     borderRightDimColor,
     borderBottomDimColor,
-    titleStyles,
+    titleStyles: titleStyles2,
     ...outerBoxProps
   } = getOuterBoxProps(props);
   const initialBorders = {
@@ -524,10 +527,10 @@ var TitledBox = (props) => {
     style: borderStyle,
     titles,
     titleJustify,
-    titleStyles
+    titleStyles: titleStyles2
   }), []);
-  const [data2, setData] = useState(box);
-  const { borders, topBorderData } = data2;
+  const [data3, setData] = useState(box);
+  const { borders, topBorderData } = data3;
   useEffect(() => {
     if (!boxRef.current)
       return;
@@ -563,8 +566,27 @@ var TitledBox = (props) => {
   }, undefined, true, undefined, this);
 };
 export {
+  titleStyles,
+  subtractEdgeBorders,
+  shiftPositions,
+  isOuterBoxPropName,
+  innerBoxPropNames,
+  getTopBorderData,
+  getStartTitlePositions,
+  getSpacedTitlePositions,
+  getSpaceAroundTitlePositions,
+  getPositions,
+  getOuterBoxProps,
+  getInnerBoxProps,
+  getEndTitlePositions,
+  getCenterTitlePositions,
   borderCharacters,
+  TopBorderUi,
   TitledBoxApi,
   TitledBox,
+  TOP_CORNER_LENGTH,
+  TITLE_PADDING,
+  StyledTitleEdge,
+  StyledTitle,
   BorderUi
 };
