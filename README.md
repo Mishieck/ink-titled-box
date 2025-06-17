@@ -10,6 +10,8 @@ of Ink.
 
 ![Border Styles](https://github.com/user-attachments/assets/6b255c42-114c-4cfb-bf6f-86ce6b97b787)
 
+> Note: Arrow borders do not work with the titles.
+
 ### Positions
 
 ![Positions](https://github.com/user-attachments/assets/ee045f02-416d-4c6f-8b22-f07d04cbe6c7)
