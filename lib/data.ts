@@ -157,3 +157,8 @@ export type TitledBoxData = {
   topBorderData: TopBorder;
 };
 
+export const titleStyles: Record<string, TitleStyles> = {
+  rectangle: { start: ' ', end: ' ' },
+  pill: { start: '', end: '' },
+  hexagon: { start: '', end: '' },
+};
