@@ -59,3 +59,7 @@ const Demo: React.FC = () => (
     />
 );
 ```
+
+> Note: apart from `titleStyles.rectangle`, all other styles use 
+> [Nerd Fonts](https://www.nerdfonts.com). So, if you do not have Nerd Fonts
+> installed, you will not get the expected results.
