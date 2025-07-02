@@ -4,12 +4,14 @@ import { Justify } from "./demos/justify";
 import { Visibility } from "./demos/visiblity";
 import { TitleStylesUi } from "./demos/title-styles";
 import { Colors } from "./demos/colors";
+import { TextOnly } from "./demos/text";
 
 const demos = {
   colors: Colors,
   justify: Justify,
   styles: Styles,
   visibility: Visibility,
+  text: TextOnly,
   'title-styles': TitleStylesUi
 };
 

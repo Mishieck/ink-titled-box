@@ -30,6 +30,20 @@ export const innerBoxPropNames = [
   "flexWrap",
   "justifyContent",
   "alignItems",
+  "borderTop",
+  "borderLeft",
+  "borderColor",
+  "borderRight",
+  "borderBottom",
+  "borderDimColor",
+  "borderTopColor",
+  "borderLeftColor",
+  "borderRightColor",
+  "borderBottomColor",
+  "borderTopDimColor",
+  "borderLeftDimColor",
+  "borderRightDimColor",
+  "borderBottomDimColor",
   "padding",
   "paddingLeft",
   "paddingY",
@@ -43,10 +57,13 @@ export const innerBoxPropNames = [
   "display",
 ] satisfies Array<keyof TitledBoxProps>;
 
-export type OuterBoxPropName = Exclude<keyof TitledBoxProps, InnerBoxPropName>;
+export type OuterBoxPropName =
+  | Exclude<keyof TitledBoxProps, InnerBoxPropName>
+  | BorderFlagName;
+
 export type InnerBoxPropName = (typeof innerBoxPropNames)[number];
 export type InnerBoxProps = Pick<TitledBoxProps, InnerBoxPropName>;
-export type OuterBoxProps = Omit<TitledBoxProps, InnerBoxPropName>;
+export type OuterBoxProps = Pick<TitledBoxProps, OuterBoxPropName>;
 
 export const TITLE_PADDING = 2;
 export const TOP_CORNER_LENGTH = 2;
@@ -58,8 +75,17 @@ export const getInnerBoxProps = (props: TitledBoxProps): InnerBoxProps => {
   );
 
   if (!innerBoxProps.display) Object.assign(innerBoxProps, { display: 'flex' });
-  return innerBoxProps as InnerBoxProps;
+  return setBorderFlags(innerBoxProps) as InnerBoxProps;
 };
+
+const borderFlagNames = [
+  "borderBottom",
+  "borderLeft",
+  "borderRight",
+  "borderTop"
+] as const;
+
+export type BorderFlagName = (typeof borderFlagNames)[number];
 
 export const getOuterBoxProps = (props: TitledBoxProps): OuterBoxProps => {
   const outerBoxProps = Object
@@ -70,23 +96,22 @@ export const getOuterBoxProps = (props: TitledBoxProps): OuterBoxProps => {
       {} as Partial<OuterBoxProps>
     );
 
-  const borderFlagNames = [
-    "borderBottom",
-    "borderLeft",
-    "borderRight",
-    "borderTop"
-  ] as const;
-
-  for (const name of borderFlagNames) {
-    if (typeof outerBoxProps[name] === "undefined")
-      Object.assign(outerBoxProps, { [name]: true });
-  }
-
-  return outerBoxProps as OuterBoxProps;
+  return setBorderFlags(outerBoxProps) as OuterBoxProps;
 };
 
 export const isOuterBoxPropName = (name: string): name is OuterBoxPropName =>
-  !innerBoxPropNames.includes(name as InnerBoxPropName);
+  !innerBoxPropNames.includes(name as InnerBoxPropName)
+  || borderFlagNames.includes(name as BorderFlagName);
+
+export const setBorderFlags = <
+  Rec extends Partial<Record<BorderFlagName, boolean | undefined>>
+>(record: Rec) => {
+  for (const name of borderFlagNames) {
+    if (typeof record[name] === "undefined") record[name] = true
+  }
+
+  return record;
+}
 
 export const shiftPositions = (
   positions: Array<number>,

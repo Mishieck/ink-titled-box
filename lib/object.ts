@@ -1,8 +1,8 @@
 import type { BorderData } from "./border";
 import type {
   BorderCharacters,
-  Borders,
   BorderStyle,
+  BorderVisibilityFlags,
   Size,
   TitledBoxData,
   TitledBoxOptions,
@@ -41,27 +41,27 @@ export class TitledBoxApi implements TitledBoxData {
   titles: Array<string>;
   titleJustify: TitleJustify;
   titleStyles?: TitleStyles;
-  #borders: Borders;
+  #topBorder: BorderData;
+  borderVisibility: BorderVisibilityFlags;
 
   constructor(options: TitledBoxOptions) {
-    const { borders, size, style, titles, titleJustify, titleStyles } = options;
+    const {
+      borderVisibility,
+      topBorder,
+      size,
+      style,
+      titles,
+      titleJustify,
+      titleStyles
+    } = options;
 
     this.size = size;
     this.style = style;
     this.titles = titles;
     this.titleJustify = titleJustify ?? 'flex-start';
     this.titleStyles = titleStyles;
-    this.#borders = borders;
-  }
-
-  /** The borders of the four sides of the box. */
-  get borders(): Borders {
-    return {
-      bottom: this.bottomBorder,
-      left: this.leftBorder,
-      right: this.rightBorder,
-      top: this.topBorder
-    }
+    this.borderVisibility = borderVisibility;
+    this.#topBorder = topBorder;
   }
 
   /** The number of visible titles. */
@@ -97,43 +97,10 @@ export class TitledBoxApi implements TitledBoxData {
     return { center: '', isVisible: false };
   }
 
-  get bottomBorder(): BorderData {
-    const { bottomLeft, bottomRight, bottomCenter } = this.characters;
-
-    const length = subtractEdgeBorders(
-      this.size.width,
-      [this.#borders.left.isVisible, this.#borders.right.isVisible]
-    );
-
-    if (length < 0) return this.emptyBorder;
-    const center = bottomCenter.repeat(length);
-
-    return {
-      ...this.#borders.bottom,
-      center,
-      end: this.#borders.right.isVisible ? bottomRight : undefined,
-      start: this.#borders.left.isVisible ? bottomLeft : undefined,
-    };
-  }
-
-  get leftBorder(): BorderData {
-    return {
-      ...this.#borders.left,
-      center: this.getVerticalBorder(this.characters.leftCenter)
-    };
-  }
-
-  get rightBorder(): BorderData {
-    return {
-      ...this.#borders.right,
-      center: this.getVerticalBorder(this.characters.rightCenter)
-    };
-  }
-
   get topBorder(): BorderData {
     const length = subtractEdgeBorders(
       this.size.width,
-      [this.#borders.left.isVisible, this.#borders.right.isVisible]
+      [this.borderVisibility.left, this.borderVisibility.right]
     );
 
     if (length < 2) return this.emptyBorder;
@@ -156,10 +123,10 @@ export class TitledBoxApi implements TitledBoxData {
       );
 
     return {
-      ...this.#borders.top,
+      ...this.#topBorder,
       center: centerCharacters.join(''),
-      end: this.#borders.right.isVisible ? topRight : undefined,
-      start: this.#borders.left.isVisible ? topLeft : undefined,
+      end: this.borderVisibility.right ? topRight : undefined,
+      start: this.borderVisibility.left ? topLeft : undefined,
     };
   }
 
@@ -266,21 +233,24 @@ export class TitledBoxApi implements TitledBoxData {
     );
   }
 
-  /** Creates a vertical border. */
-  getVerticalBorder(character: string): string {
-    const length = subtractEdgeBorders(
-      this.size.height,
-      [this.#borders.bottom.isVisible, this.#borders.top.isVisible]
-    );
-
-    return this.size.height > 1
-      ? new Array(length).fill(character).join('\n')
-      : '';
-  }
-
   /** Creates a JSON object containing `TitledBoxData`. */
   toJSON(): TitledBoxData {
-    const { borders, size, style, titles, titleJustify, topBorderData } = this;
-    return { borders, size, style, titles, titleJustify, topBorderData };
+    const {
+      size,
+      style,
+      titles,
+      titleJustify,
+      topBorderData,
+      borderVisibility
+    } = this;
+
+    return {
+      size,
+      style,
+      titles,
+      titleJustify,
+      topBorderData,
+      borderVisibility
+    };
   }
 }

@@ -136,6 +136,7 @@ export const borderCharacters: Record<BorderStyle, BorderCharacters> = {
 
 export type BorderPosition = 'bottom' | 'left' | 'right' | 'top';
 export type Borders = Record<BorderPosition, BorderData>;
+export type BorderVisibilityFlags = Record<BorderPosition, boolean>;
 export type CrossAxisBorderVisibilities = [start: boolean, end: boolean];
 
 export type TitleStyles = {
@@ -145,7 +146,9 @@ export type TitleStyles = {
 
 export type TitledBoxOptions =
   & Omit<TitledBoxData, 'titleJustify' | "topBorderData">
-  & Partial<Pick<TitledBoxData, 'titleJustify'>>;
+  & Partial<Pick<TitledBoxData, 'titleJustify'>>
+  & { topBorder: BorderData }
+
 
 export type TitledBoxData = {
   size: Size;
@@ -153,8 +156,8 @@ export type TitledBoxData = {
   titles: Array<string>;
   titleJustify: TitleJustify;
   titleStyles?: TitleStyles;
-  borders: Borders;
   topBorderData: TopBorder;
+  borderVisibility: BorderVisibilityFlags;
 };
 
 export const titleStyles: Record<string, TitleStyles> = {

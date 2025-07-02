@@ -3,7 +3,6 @@ import type React from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Borders, Size, TitledBoxData } from "./data";
 import { TitledBoxApi } from "./object";
-import { BorderUi } from "./border";
 import {
   getOuterBoxProps,
   getInnerBoxProps,
@@ -16,10 +15,6 @@ export const TitledBox: React.FC<TitledBoxProps> = props => {
   const innerBoxProps = getInnerBoxProps(props);
 
   const {
-    titles,
-    borderStyle,
-    titleJustify,
-
     borderTop,
     borderLeft,
     borderColor,
@@ -34,6 +29,12 @@ export const TitledBox: React.FC<TitledBoxProps> = props => {
     borderLeftDimColor,
     borderRightDimColor,
     borderBottomDimColor,
+  } = innerBoxProps;
+
+  const {
+    titles,
+    borderStyle,
+    titleJustify,
 
     titleStyles,
     ...outerBoxProps
@@ -75,10 +76,21 @@ export const TitledBox: React.FC<TitledBoxProps> = props => {
 
   const box = useMemo(
     () => new TitledBoxApi({
-      borders: initialBorders,
+      borderVisibility: {
+        top: borderTop!,
+        right: borderRight!,
+        bottom: borderBottom!,
+        left: borderLeft!,
+      },
       size,
       style: borderStyle,
       titles,
+      topBorder: {
+        center: '',
+        color: borderBottomColor ?? borderColor,
+        dimColor: borderBottomDimColor ?? borderDimColor,
+        isVisible: borderBottom!
+      },
       titleJustify,
       titleStyles
     }),
@@ -86,7 +98,7 @@ export const TitledBox: React.FC<TitledBoxProps> = props => {
   );
 
   const [data, setData] = useState<TitledBoxData>(box);
-  const { borders, topBorderData } = data;
+  const { topBorderData } = data;
 
   useEffect(
     () => {
@@ -100,12 +112,25 @@ export const TitledBox: React.FC<TitledBoxProps> = props => {
   return (
     <Box ref={boxRef} flexDirection="column" {...outerBoxProps}>
       <TopBorderUi {...topBorderData} />
-      <Box>
-        <BorderUi {...borders.left} />
-        <Box flexGrow={1} {...innerBoxProps}></Box>
-        <BorderUi {...borders.right} />
-      </Box>
-      <BorderUi {...borders.bottom} />
+      <Box
+        borderStyle={borderStyle}
+        borderLeft={borderLeft}
+        borderColor={borderColor}
+        borderRight={borderRight}
+        borderBottom={borderBottom}
+        borderDimColor={borderDimColor}
+        borderTopColor={borderTopColor}
+        borderLeftColor={borderLeftColor}
+        borderRightColor={borderRightColor}
+        borderBottomColor={borderBottomColor}
+        borderTopDimColor={borderTopDimColor}
+        borderLeftDimColor={borderLeftDimColor}
+        borderRightDimColor={borderRightDimColor}
+        borderBottomDimColor={borderBottomDimColor}
+        flexGrow={1}
+        {...innerBoxProps}
+        borderTop={false}
+      ></Box>
     </Box>
   );
 };
