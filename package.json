@@ -36,7 +36,8 @@
   "license": "MIT",
   "scripts": {
     "demo": "bun run demos.tsx",
-    "build": "bun build.ts"
+    "build": "bun build.ts",
+    "publish": "bun publish --access=public"
   },
   "type": "module"
 }
