@@ -1,4 +1,4 @@
-import type { BorderData } from "./border";
+import type { BorderData } from "./top-border";
 import type {
   BorderCharacters,
   BorderStyle,

@@ -1,6 +1,5 @@
 import type { BoxProps } from "ink";
-import type { BorderData } from "./border";
-import type { TopBorder } from "./top-border/data";
+import type { BorderData, TopBorder } from "./top-border/data";
 
 export type Size = {
   width: number;

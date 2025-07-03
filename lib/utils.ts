@@ -5,8 +5,7 @@ import type {
   TitleJustify
 } from "./data";
 import type { BoxProps } from "ink";
-import type { TopBorder, TopBorderFragment } from "./top-border/data";
-import type { BorderData } from "./border";
+import type { BorderData, TopBorder, TopBorderFragment } from "./top-border/data";
 
 export type TitledBoxProps = Omit<BoxProps, 'borderStyle' | 'children'> & {
   titles: Array<string>;

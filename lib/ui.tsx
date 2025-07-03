@@ -1,7 +1,7 @@
 import { Box, type DOMElement, measureElement } from "ink";
 import type React from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { Borders, Size, TitledBoxData } from "./data";
+import type { Size, TitledBoxData } from "./data";
 import { TitledBoxApi } from "./object";
 import {
   getOuterBoxProps,
@@ -35,37 +35,9 @@ export const TitledBox: React.FC<TitledBoxProps> = props => {
     titles,
     borderStyle,
     titleJustify,
-
     titleStyles,
     ...outerBoxProps
   } = getOuterBoxProps(props);
-
-  const initialBorders: Borders = {
-    bottom: {
-      center: '',
-      color: borderBottomColor ?? borderColor,
-      dimColor: borderBottomDimColor ?? borderDimColor,
-      isVisible: borderBottom!
-    },
-    left: {
-      center: '',
-      color: borderLeftColor ?? borderColor,
-      dimColor: borderLeftDimColor ?? borderDimColor,
-      isVisible: borderLeft!
-    },
-    right: {
-      center: '',
-      color: borderRightColor ?? borderColor,
-      dimColor: borderRightDimColor ?? borderDimColor,
-      isVisible: borderRight!
-    },
-    top: {
-      center: '',
-      color: borderTopColor ?? borderColor,
-      dimColor: borderTopDimColor ?? borderDimColor,
-      isVisible: borderTop!
-    },
-  };
 
   const { height, width } = outerBoxProps;
 

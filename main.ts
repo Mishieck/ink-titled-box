@@ -1,4 +1,3 @@
-export * from './lib/border';
 export * from './lib/data';
 export * from './lib/object';
 export * from './lib/top-border';
