@@ -11,8 +11,6 @@ export type BorderData = {
 	isVisible: boolean;
 	start?: string;
 };
-export type BorderProps = BorderData;
-export declare const BorderUi: React$1.FC<BorderProps>;
 export type TopBorderFragment = {
 	isTitle: boolean;
 	content: string;
@@ -36,6 +34,7 @@ export type Widths = {
 export declare const borderCharacters: Record<BorderStyle, BorderCharacters>;
 export type BorderPosition = "bottom" | "left" | "right" | "top";
 export type Borders = Record<BorderPosition, BorderData>;
+export type BorderVisibilityFlags = Record<BorderPosition, boolean>;
 export type CrossAxisBorderVisibilities = [
 	start: boolean,
 	end: boolean
@@ -44,17 +43,30 @@ export type TitleStyles = {
 	start: string;
 	end: string;
 };
-export type TitledBoxOptions = Omit<TitledBoxData, "titleJustify" | "topBorderData"> & Partial<Pick<TitledBoxData, "titleJustify">>;
+export type TitledBoxOptions = Omit<TitledBoxData, "titleJustify" | "topBorderData"> & Partial<Pick<TitledBoxData, "titleJustify">> & {
+	topBorder: BorderData;
+};
 export type TitledBoxData = {
 	size: Size;
 	style: BorderStyle;
 	titles: Array<string>;
 	titleJustify: TitleJustify;
 	titleStyles?: TitleStyles;
-	borders: Borders;
 	topBorderData: TopBorder;
+	borderVisibility: BorderVisibilityFlags;
 };
 export declare const titleStyles: Record<string, TitleStyles>;
+export type TopBorderProps = TopBorder;
+export type StyledTitleProps = {
+	content: string;
+	styles: TitleStyles;
+};
+export type StyledTitleEdgeProps = {
+	children: string;
+};
+export declare const TopBorderUi: React$1.FC<TopBorderProps>;
+export declare const StyledTitle: React$1.FC<StyledTitleProps>;
+export declare const StyledTitleEdge: React$1.FC<StyledTitleEdgeProps>;
 export declare class TitledBoxApi implements TitledBoxData {
 	#private;
 	/** The characters used to build borders borders. */
@@ -70,9 +82,8 @@ export declare class TitledBoxApi implements TitledBoxData {
 	titles: Array<string>;
 	titleJustify: TitleJustify;
 	titleStyles?: TitleStyles;
+	borderVisibility: BorderVisibilityFlags;
 	constructor(options: TitledBoxOptions);
-	/** The borders of the four sides of the box. */
-	get borders(): Borders;
 	/** The number of visible titles. */
 	get visibleTitleCount(): number;
 	/** The titles that are visible. Titles that overflow are hidden. */
@@ -83,9 +94,6 @@ export declare class TitledBoxApi implements TitledBoxData {
 	 * is the border having insufficient length.
 	 */
 	get emptyBorder(): BorderData;
-	get bottomBorder(): BorderData;
-	get leftBorder(): BorderData;
-	get rightBorder(): BorderData;
 	get topBorder(): BorderData;
 	/** The data for the top border. */
 	get topBorderData(): TopBorder;
@@ -117,22 +125,9 @@ export declare class TitledBoxApi implements TitledBoxData {
 	getEvenlySpacedTitlePositions(spaceCountAdjustment: -1 | 1, startWidthSpace?: boolean): Array<number>;
 	/** Title positions for `titleJustify="center"`. */
 	get centerTitlePositions(): Array<number>;
-	/** Creates a vertical border. */
-	getVerticalBorder(character: string): string;
 	/** Creates a JSON object containing `TitledBoxData`. */
 	toJSON(): TitledBoxData;
 }
-export type TopBorderProps = TopBorder;
-export type StyledTitleProps = {
-	content: string;
-	styles: TitleStyles;
-};
-export type StyledTitleEdgeProps = {
-	children: string;
-};
-export declare const TopBorderUi: React$1.FC<TopBorderProps>;
-export declare const StyledTitle: React$1.FC<StyledTitleProps>;
-export declare const StyledTitleEdge: React$1.FC<StyledTitleEdgeProps>;
 export type TitledBoxProps = Omit<BoxProps, "borderStyle" | "children"> & {
 	titles: Array<string>;
 	titleJustify?: TitleJustify;
@@ -147,16 +142,24 @@ export type SpacedTitlePositionsData = {
 	edgeSpace: number;
 	inBetweenSpace: number;
 };
-export declare const innerBoxPropNames: ("children" | "justifyContent" | "columnGap" | "rowGap" | "gap" | "padding" | "paddingX" | "paddingY" | "paddingTop" | "paddingBottom" | "paddingLeft" | "paddingRight" | "flexDirection" | "flexWrap" | "alignItems" | "display")[];
-export type OuterBoxPropName = Exclude<keyof TitledBoxProps, InnerBoxPropName>;
+export declare const innerBoxPropNames: ("justifyContent" | "columnGap" | "rowGap" | "gap" | "padding" | "paddingX" | "paddingY" | "paddingTop" | "paddingBottom" | "paddingLeft" | "paddingRight" | "flexDirection" | "flexWrap" | "alignItems" | "display" | "borderTop" | "borderBottom" | "borderLeft" | "borderRight" | "borderColor" | "borderTopColor" | "borderBottomColor" | "borderLeftColor" | "borderRightColor" | "borderDimColor" | "borderTopDimColor" | "borderBottomDimColor" | "borderLeftDimColor" | "borderRightDimColor" | "children")[];
+export type OuterBoxPropName = Exclude<keyof TitledBoxProps, InnerBoxPropName> | BorderFlagName;
 export type InnerBoxPropName = (typeof innerBoxPropNames)[number];
 export type InnerBoxProps = Pick<TitledBoxProps, InnerBoxPropName>;
-export type OuterBoxProps = Omit<TitledBoxProps, InnerBoxPropName>;
+export type OuterBoxProps = Pick<TitledBoxProps, OuterBoxPropName>;
 export declare const TITLE_PADDING = 2;
 export declare const TOP_CORNER_LENGTH = 2;
 export declare const getInnerBoxProps: (props: TitledBoxProps) => InnerBoxProps;
+declare const borderFlagNames: readonly [
+	"borderBottom",
+	"borderLeft",
+	"borderRight",
+	"borderTop"
+];
+export type BorderFlagName = (typeof borderFlagNames)[number];
 export declare const getOuterBoxProps: (props: TitledBoxProps) => OuterBoxProps;
 export declare const isOuterBoxPropName: (name: string) => name is OuterBoxPropName;
+export declare const setBorderFlags: <Rec extends Partial<Record<BorderFlagName, boolean | undefined>>>(record: Rec) => Rec;
 export declare const shiftPositions: (positions: Array<number>, shiftCount: number) => Array<number>;
 /** The data for the top border. */
 export declare const getTopBorderData: (topBorder: BorderData, titlePositions: Array<number>, visibleTitles: Array<string>, titleStyles?: TitleStyles) => TopBorder;

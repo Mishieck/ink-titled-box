@@ -1,18 +1,3 @@
-// lib/border/ui.tsx
-import { Text } from "ink";
-import { jsxDEV } from "react/jsx-dev-runtime";
-var BorderUi = (props) => {
-  const { color, start, center, end, isVisible, dimColor } = props;
-  return isVisible ? /* @__PURE__ */ jsxDEV(Text, {
-    color,
-    dimColor,
-    children: [
-      start,
-      center,
-      end
-    ]
-  }, undefined, true, undefined, this) : null;
-};
 // lib/data.ts
 var arrow = {
   topLeft: "↘",
@@ -116,6 +101,20 @@ var innerBoxPropNames = [
   "flexWrap",
   "justifyContent",
   "alignItems",
+  "borderTop",
+  "borderLeft",
+  "borderColor",
+  "borderRight",
+  "borderBottom",
+  "borderDimColor",
+  "borderTopColor",
+  "borderLeftColor",
+  "borderRightColor",
+  "borderBottomColor",
+  "borderTopDimColor",
+  "borderLeftDimColor",
+  "borderRightDimColor",
+  "borderBottomDimColor",
   "padding",
   "paddingLeft",
   "paddingY",
@@ -134,23 +133,26 @@ var getInnerBoxProps = (props) => {
   const innerBoxProps = innerBoxPropNames.reduce((innerBoxProps2, name) => ({ ...innerBoxProps2, [name]: props[name] }), {});
   if (!innerBoxProps.display)
     Object.assign(innerBoxProps, { display: "flex" });
-  return innerBoxProps;
+  return setBorderFlags(innerBoxProps);
 };
+var borderFlagNames = [
+  "borderBottom",
+  "borderLeft",
+  "borderRight",
+  "borderTop"
+];
 var getOuterBoxProps = (props) => {
   const outerBoxProps = Object.keys(props).filter(isOuterBoxPropName).reduce((outerBoxProps2, name) => ({ ...outerBoxProps2, [name]: props[name] }), {});
-  const borderFlagNames = [
-    "borderBottom",
-    "borderLeft",
-    "borderRight",
-    "borderTop"
-  ];
-  for (const name of borderFlagNames) {
-    if (typeof outerBoxProps[name] === "undefined")
-      Object.assign(outerBoxProps, { [name]: true });
-  }
-  return outerBoxProps;
+  return setBorderFlags(outerBoxProps);
 };
-var isOuterBoxPropName = (name) => !innerBoxPropNames.includes(name);
+var isOuterBoxPropName = (name) => !innerBoxPropNames.includes(name) || borderFlagNames.includes(name);
+var setBorderFlags = (record) => {
+  for (const name of borderFlagNames) {
+    if (typeof record[name] === "undefined")
+      record[name] = true;
+  }
+  return record;
+};
 var shiftPositions = (positions, shiftCount) => {
   const shiftPosition = Math.ceil((positions.length - shiftCount) / 2);
   let remainingSpaces = shiftCount;
@@ -244,14 +246,14 @@ var getSpaceAroundTitlePositions = (visibleTitles, width, totalTitleLength) => {
     inBetweenSpace: inBetweenSpaceLength
   });
 };
-var getSpacedTitlePositions = (data2) => {
+var getSpacedTitlePositions = (data) => {
   const {
     visibleTitles,
     width,
     totalTitleLength,
     edgeSpace,
     inBetweenSpace
-  } = data2;
+  } = data;
   const edgeSpaceCount = 2;
   const inBetweenSpaceCount = visibleTitles.length - 1;
   const totalSpaceLength = width - totalTitleLength - 2;
@@ -280,23 +282,25 @@ class TitledBoxApi {
   titles;
   titleJustify;
   titleStyles;
-  #borders;
+  #topBorder;
+  borderVisibility;
   constructor(options) {
-    const { borders, size, style, titles, titleJustify, titleStyles: titleStyles2 } = options;
+    const {
+      borderVisibility,
+      topBorder,
+      size,
+      style,
+      titles,
+      titleJustify,
+      titleStyles: titleStyles2
+    } = options;
     this.size = size;
     this.style = style;
     this.titles = titles;
     this.titleJustify = titleJustify ?? "flex-start";
     this.titleStyles = titleStyles2;
-    this.#borders = borders;
-  }
-  get borders() {
-    return {
-      bottom: this.bottomBorder,
-      left: this.leftBorder,
-      right: this.rightBorder,
-      top: this.topBorder
-    };
+    this.borderVisibility = borderVisibility;
+    this.#topBorder = topBorder;
   }
   get visibleTitleCount() {
     let count = 0;
@@ -322,33 +326,8 @@ class TitledBoxApi {
   get emptyBorder() {
     return { center: "", isVisible: false };
   }
-  get bottomBorder() {
-    const { bottomLeft, bottomRight, bottomCenter } = this.characters;
-    const length = subtractEdgeBorders(this.size.width, [this.#borders.left.isVisible, this.#borders.right.isVisible]);
-    if (length < 0)
-      return this.emptyBorder;
-    const center = bottomCenter.repeat(length);
-    return {
-      ...this.#borders.bottom,
-      center,
-      end: this.#borders.right.isVisible ? bottomRight : undefined,
-      start: this.#borders.left.isVisible ? bottomLeft : undefined
-    };
-  }
-  get leftBorder() {
-    return {
-      ...this.#borders.left,
-      center: this.getVerticalBorder(this.characters.leftCenter)
-    };
-  }
-  get rightBorder() {
-    return {
-      ...this.#borders.right,
-      center: this.getVerticalBorder(this.characters.rightCenter)
-    };
-  }
   get topBorder() {
-    const length = subtractEdgeBorders(this.size.width, [this.#borders.left.isVisible, this.#borders.right.isVisible]);
+    const length = subtractEdgeBorders(this.size.width, [this.borderVisibility.left, this.borderVisibility.right]);
     if (length < 2)
       return this.emptyBorder;
     const { topLeft, topCenter, topRight } = this.characters;
@@ -359,10 +338,10 @@ class TitledBoxApi {
       centerCharacters.splice(position, paddedTitleLength, ...paddedTitle);
     });
     return {
-      ...this.#borders.top,
+      ...this.#topBorder,
       center: centerCharacters.join(""),
-      end: this.#borders.right.isVisible ? topRight : undefined,
-      start: this.#borders.left.isVisible ? topLeft : undefined
+      end: this.borderVisibility.right ? topRight : undefined,
+      start: this.borderVisibility.left ? topLeft : undefined
     };
   }
   get topBorderData() {
@@ -418,61 +397,67 @@ class TitledBoxApi {
   get centerTitlePositions() {
     return getCenterTitlePositions(this.startTitlePositions, this.size.width, this.totalTitleLength);
   }
-  getVerticalBorder(character) {
-    const length = subtractEdgeBorders(this.size.height, [this.#borders.bottom.isVisible, this.#borders.top.isVisible]);
-    return this.size.height > 1 ? new Array(length).fill(character).join(`
-`) : "";
-  }
   toJSON() {
-    const { borders, size, style, titles, titleJustify, topBorderData } = this;
-    return { borders, size, style, titles, titleJustify, topBorderData };
+    const {
+      size,
+      style,
+      titles,
+      titleJustify,
+      topBorderData,
+      borderVisibility
+    } = this;
+    return {
+      size,
+      style,
+      titles,
+      titleJustify,
+      topBorderData,
+      borderVisibility
+    };
   }
 }
 // lib/top-border/ui.tsx
-import { Text as Text2 } from "ink";
-import { jsxDEV as jsxDEV2, Fragment } from "react/jsx-dev-runtime";
+import { Text } from "ink";
+import { jsxDEV, Fragment } from "react/jsx-dev-runtime";
 var TopBorderUi = (props) => {
   const { fragments, color, dimColor, isVisible, titleStyles: titleStyles2 } = props;
-  return isVisible ? /* @__PURE__ */ jsxDEV2(Text2, {
+  return isVisible ? /* @__PURE__ */ jsxDEV(Text, {
     color,
     dimColor,
-    children: fragments.map(({ isTitle, content }, i) => isTitle && titleStyles2 ? /* @__PURE__ */ jsxDEV2(StyledTitle, {
+    children: fragments.map(({ isTitle, content }, i) => isTitle && titleStyles2 ? /* @__PURE__ */ jsxDEV(StyledTitle, {
       content: content.trim(),
       styles: titleStyles2
-    }, i, false, undefined, this) : /* @__PURE__ */ jsxDEV2(Text2, {
+    }, i, false, undefined, this) : /* @__PURE__ */ jsxDEV(Text, {
       children: content
     }, i, false, undefined, this))
   }, undefined, false, undefined, this) : null;
 };
-var StyledTitle = ({ content, styles }) => /* @__PURE__ */ jsxDEV2(Fragment, {
+var StyledTitle = ({ content, styles }) => /* @__PURE__ */ jsxDEV(Fragment, {
   children: [
-    /* @__PURE__ */ jsxDEV2(StyledTitleEdge, {
+    /* @__PURE__ */ jsxDEV(StyledTitleEdge, {
       children: styles.start
     }, undefined, false, undefined, this),
-    /* @__PURE__ */ jsxDEV2(Text2, {
+    /* @__PURE__ */ jsxDEV(Text, {
       inverse: true,
       children: content
     }, undefined, false, undefined, this),
-    /* @__PURE__ */ jsxDEV2(StyledTitleEdge, {
+    /* @__PURE__ */ jsxDEV(StyledTitleEdge, {
       children: styles.end
     }, undefined, false, undefined, this)
   ]
 }, undefined, true, undefined, this);
-var StyledTitleEdge = ({ children }) => /* @__PURE__ */ jsxDEV2(Text2, {
+var StyledTitleEdge = ({ children }) => /* @__PURE__ */ jsxDEV(Text, {
   inverse: children === " ",
   children
 }, undefined, false, undefined, this);
 // lib/ui.tsx
 import { Box, measureElement } from "ink";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { jsxDEV as jsxDEV3 } from "react/jsx-dev-runtime";
+import { jsxDEV as jsxDEV2 } from "react/jsx-dev-runtime";
 var TitledBox = (props) => {
   const boxRef = useRef(null);
   const innerBoxProps = getInnerBoxProps(props);
   const {
-    titles,
-    borderStyle,
-    titleJustify,
     borderTop,
     borderLeft,
     borderColor,
@@ -486,81 +471,73 @@ var TitledBox = (props) => {
     borderTopDimColor,
     borderLeftDimColor,
     borderRightDimColor,
-    borderBottomDimColor,
+    borderBottomDimColor
+  } = innerBoxProps;
+  const {
+    titles,
+    borderStyle,
+    titleJustify,
     titleStyles: titleStyles2,
     ...outerBoxProps
   } = getOuterBoxProps(props);
-  const initialBorders = {
-    bottom: {
-      center: "",
-      color: borderBottomColor ?? borderColor,
-      dimColor: borderBottomDimColor ?? borderDimColor,
-      isVisible: borderBottom
-    },
-    left: {
-      center: "",
-      color: borderLeftColor ?? borderColor,
-      dimColor: borderLeftDimColor ?? borderDimColor,
-      isVisible: borderLeft
-    },
-    right: {
-      center: "",
-      color: borderRightColor ?? borderColor,
-      dimColor: borderRightDimColor ?? borderDimColor,
-      isVisible: borderRight
-    },
-    top: {
-      center: "",
-      color: borderTopColor ?? borderColor,
-      dimColor: borderTopDimColor ?? borderDimColor,
-      isVisible: borderTop
-    }
-  };
   const { height, width } = outerBoxProps;
   const size = {
     height: typeof height === "number" ? height : 0,
     width: typeof width === "number" ? width : 0
   };
   const box = useMemo(() => new TitledBoxApi({
-    borders: initialBorders,
+    borderVisibility: {
+      top: borderTop,
+      right: borderRight,
+      bottom: borderBottom,
+      left: borderLeft
+    },
     size,
     style: borderStyle,
     titles,
+    topBorder: {
+      center: "",
+      color: borderBottomColor ?? borderColor,
+      dimColor: borderBottomDimColor ?? borderDimColor,
+      isVisible: borderBottom
+    },
     titleJustify,
     titleStyles: titleStyles2
   }), []);
-  const [data3, setData] = useState(box);
-  const { borders, topBorderData } = data3;
+  const [data2, setData] = useState(box);
+  const { topBorderData } = data2;
   useEffect(() => {
     if (!boxRef.current)
       return;
     box.size = measureElement(boxRef.current);
     setData(box.toJSON());
   }, [boxRef.current]);
-  return /* @__PURE__ */ jsxDEV3(Box, {
+  return /* @__PURE__ */ jsxDEV2(Box, {
     ref: boxRef,
     flexDirection: "column",
     ...outerBoxProps,
     children: [
-      /* @__PURE__ */ jsxDEV3(TopBorderUi, {
+      /* @__PURE__ */ jsxDEV2(TopBorderUi, {
         ...topBorderData
       }, undefined, false, undefined, this),
-      /* @__PURE__ */ jsxDEV3(Box, {
-        children: [
-          /* @__PURE__ */ jsxDEV3(BorderUi, {
-            ...borders.left
-          }, undefined, false, undefined, this),
-          /* @__PURE__ */ jsxDEV3(Box, {
-            flexGrow: 1,
-            ...innerBoxProps
-          }, undefined, false, undefined, this),
-          /* @__PURE__ */ jsxDEV3(BorderUi, {
-            ...borders.right
-          }, undefined, false, undefined, this)
-        ]
-      }, undefined, true, undefined, this),
-      /* @__PURE__ */ jsxDEV3(BorderUi, {
-        ...borders.bottom
+      /* @__PURE__ */ jsxDEV2(Box, {
+        borderStyle,
+        borderLeft,
+        borderColor,
+        borderRight,
+        borderBottom,
+        borderDimColor,
+        borderTopColor,
+        borderLeftColor,
+        borderRightColor,
+        borderBottomColor,
+        borderTopDimColor,
+        borderLeftDimColor,
+        borderRightDimColor,
+        borderBottomDimColor,
+        flexGrow: 1,
+        ...innerBoxProps,
+        borderTop: false
       }, undefined, false, undefined, this)
     ]
   }, undefined, true, undefined, this);
@@ -569,6 +546,7 @@ export {
   titleStyles,
   subtractEdgeBorders,
   shiftPositions,
+  setBorderFlags,
   isOuterBoxPropName,
   innerBoxPropNames,
   getTopBorderData,
@@ -587,6 +565,5 @@ export {
   TOP_CORNER_LENGTH,
   TITLE_PADDING,
   StyledTitleEdge,
-  StyledTitle,
-  BorderUi
+  StyledTitle
 };
